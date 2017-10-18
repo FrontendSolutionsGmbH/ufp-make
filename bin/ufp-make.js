@@ -1,11 +1,12 @@
 const path = require('path')
 const yaml = require('js-yaml')
 const yargs = require('yargs')
-const logger = require('../ext/build/lib/Logger')('ufp-make')
+const logger = require('../src/Logger')('ufp-make')
 const fs = require('fs');
-const Constants = require('../ext/build/scripts/constants')
+const Constants = require('../src/constants')
 const execSync = require('child_process').execSync
 
+logger.mark('start')
 yargs.version('1.0.0')
 
 Object.keys(Constants.MAKE_OPTIONS)
@@ -27,24 +28,59 @@ var {
 }=argv
 
 logger.info(JSON.stringify(argv))
+var currentPhase = 'default'
 var currentArea = 'none'
 var countSuccessCommands = {}
 var countFailCommands = {}
 var countCommands = {}
 // Get document, or throw exception on error
 var yamlmakefile
-try {
-    yamlmakefile = yaml.safeLoad(fs.readFileSync(path.join(process.cwd(), 'ufp-make.yml'), 'utf8'))
-    logger.info(yamlmakefile);
-} catch (e) {
-    logger.error(e);
+
+var expectedPath = path.join(process.cwd(), Constants.YAML_FILENAME)
+var fallbackPath = path.join(__dirname, '..', 'default', Constants.YAML_FILENAME)
+
+const loadYAML = (filename) => {
+
+    var result = {}
+    try {
+        result = yaml.safeLoad(fs.readFileSync(filename, 'utf8'))
+
+    } catch (e) {
+        logger.error(e);
+    }
+    return result
+
+}
+
+if (fs.existsSync(expectedPath)) {
+    yamlmakefile = loadYAML(expectedPath)
+} else {
+
+    yamlmakefile = loadYAML(fallbackPath)
+}
+
+// init stats
+yamlmakefile.phases.map((phase) => {
+    countCommands[phase] = 0
+    countFailCommands[phase] = 0
+    countSuccessCommands[phase] = 0
+})
+
+const replaceVars = (string) => {
+    var result = string
+    Object.keys(argv)
+          .map((key) => {
+              result = result.replace('${' + key + '}', argv[key])
+          })
+    return result
+
 }
 
 const handleError = (err) => {
-    countFailCommands[currentArea]++
-    logger.error('Execution failedxxx', err)
-    logger.error('Execution failedxxx', err.stderr)
-    logger.debug('Execution failed', err.stdout)
+    countFailCommands[currentPhase]++
+//    logger.error('Execution failedxxx', err)
+    logger.error(err.stderr.toString())
+    logger.debug(err.stdout.toString())
     // logger.error('Execution failed', err)
     if (!FORCE) {
         throw new Error('exiting, use --FORCE to continue on fail')
@@ -53,7 +89,7 @@ const handleError = (err) => {
     }
 }
 const executeCommandArea = (command) => {
-    console.log('area is ', command)
+//    console.log('area is ', command)
     if (typeof command === 'string' || command instanceof String) {
         executeCommand(command)
     } else if (Array.isArray(command)) {
@@ -64,19 +100,30 @@ const executeCommandArea = (command) => {
     else {
         logger.mark('Starting:', command.name)
         currentArea = command.name
-        countCommands[currentArea] = 0
-        countFailCommands[currentArea] = 0
-        countSuccessCommands[currentArea] = 0
+
         logger.info(command.description)
         command.commands.map(executeCommandArea)
         logger.mark('Finished:', command.name)
     }
 }
-const executeCommand = (command) => {
-    countCommands[currentArea]++
+const printStats = () => {
+    Object.keys(countCommands)
+          .map((key) => {
+              if (countFailCommands[key] > 0) {
+                  logger.mark('%d of %d failed for: [%s]', countFailCommands[key], countCommands[key], key)
+              } else if (countCommands[key] === 0) {
+                  logger.mark('not started: [%s]', key)
+              } else {
+                  logger.mark('succesful: [%s]', key)
+              }
+          })
+}
+const executeCommand = (commandIn) => {
+    countCommands[currentPhase]++
+    const command = replaceVars(commandIn)
     try {
-        logger.info('EXEC [', command, ']')
 
+        logger.info('EXEC [', command, ']')
         const output = execSync(command, {
             cwd: process.cwd(),
             stdio: ['pipe', 'pipe', 'pipe']
@@ -87,7 +134,7 @@ const executeCommand = (command) => {
 
         logger.debug('stdout was:')
         logger.debug(output.toString())
-        countSuccessCommands[currentArea]++
+        countSuccessCommands[currentPhase]++
     }
     catch (err) {
         logger.error('FAIL [', command, ']')
@@ -95,12 +142,20 @@ const executeCommand = (command) => {
     }
 }
 
-console.log('Hello World')
+try {
+    yamlmakefile.phases.map((phase) => {
+        logger.info('Executing phase ', phase)
+        currentPhase = phase
+        executeCommandArea(yamlmakefile[phase])
+    })
 
-yamlmakefile.phases.map((phase) => {
+    logger.mark('success')
 
-    logger.info('Executing phase ', phase)
-    executeCommandArea(yamlmakefile[phase])
+} catch (e) {
 
-})
+    logger.error(e.message)
 
+}
+
+printStats()
+logger.mark('finished')

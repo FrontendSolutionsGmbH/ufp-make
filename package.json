@@ -1,10 +1,12 @@
 {
   "name": "ufp-make",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "ufp-make cli batch execution",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "echo \"Error: no lint specified\" && exit 0",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "echo \"Error: no compile specified\" && exit 0"
   },
   "repository": {
     "type": "git",
@@ -14,6 +16,9 @@
     "build",
     "make"
   ],
+  "bin": {
+    "ufp-make": "bin/ufp-make.js"
+  },
   "author": "c.Kleinhuis",
   "license": "MIT",
   "bugs": {
@@ -21,6 +26,9 @@
   },
   "homepage": "https://github.com/FrontendSolutionsGmbH/ufp-make#readme",
   "dependencies": {
+    "eslint": "^4.9.0",
+    "js-yaml": "^3.10.0",
+    "log4js": "^2.3.7",
     "yargs": "^9.0.1"
   }
 }

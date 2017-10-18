@@ -1,0 +1,29 @@
+
+phases:
+  - lint
+  - test
+  - build
+
+lint:
+  - name: Linting Sourcecode
+    description: ... performing static code analysis
+    commands:
+    - echo "STEPPING LINT"
+    - echo "${UFP_VERSION}"
+    - npm run lint
+
+test:
+  - name: Testing
+    description: ... performs the unit tests
+    commands:
+    - npm run test
+
+build:
+  - name: Building
+    allowedToFail: false
+    description: ... actually executing the build
+    commands:
+    - npm run compile
+
+
+
