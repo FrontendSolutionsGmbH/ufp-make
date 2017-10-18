@@ -1,0 +1,26 @@
+{
+  "name": "ufp-make",
+  "version": "1.0.0",
+  "description": "ufp-make cli batch execution",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FrontendSolutionsGmbH/ufp-make.git"
+  },
+  "keywords": [
+    "build",
+    "make"
+  ],
+  "author": "c.Kleinhuis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FrontendSolutionsGmbH/ufp-make/issues"
+  },
+  "homepage": "https://github.com/FrontendSolutionsGmbH/ufp-make#readme",
+  "dependencies": {
+    "yargs": "^9.0.1"
+  }
+}
