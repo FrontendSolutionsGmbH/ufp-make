@@ -2,7 +2,7 @@ const path = require('path')
 const yaml = require('js-yaml')
 const yargs = require('yargs')
 const logger = require('../src/Logger')('ufp-make')
-const fs = require('fs');
+const fs = require('fs')
 const Constants = require('../src/constants')
 const execSync = require('child_process').execSync
 
@@ -17,19 +17,9 @@ Object.keys(Constants.MAKE_OPTIONS)
 // logger.info('YARGS INPUT IS', JSON.stringify(yargs.argv))
 
 const argv = yargs.argv
-var {
-    FORCE,
-    CLEAN,
-    UFP_STEP,
-    UFP_VERSION,
-    UFP_API_TYPE,
-    UFP_THEME,
-    UFP_NODE_ENV
-}=argv
-
-logger.info(JSON.stringify(argv))
+const {FORCE} = argv
+logger.debug('Command Line Parameters are', JSON.stringify(argv))
 var currentPhase = 'default'
-var currentArea = 'none'
 var countSuccessCommands = {}
 var countFailCommands = {}
 var countCommands = {}
@@ -40,22 +30,18 @@ var expectedPath = path.join(process.cwd(), Constants.YAML_FILENAME)
 var fallbackPath = path.join(__dirname, '..', 'default', Constants.YAML_FILENAME)
 
 const loadYAML = (filename) => {
-
     var result = {}
     try {
         result = yaml.safeLoad(fs.readFileSync(filename, 'utf8'))
-
     } catch (e) {
-        logger.error(e);
+        logger.error(e)
     }
     return result
-
 }
 
 if (fs.existsSync(expectedPath)) {
     yamlmakefile = loadYAML(expectedPath)
 } else {
-
     yamlmakefile = loadYAML(fallbackPath)
 }
 
@@ -73,7 +59,6 @@ const replaceVars = (string) => {
               result = result.replace('${' + key + '}', argv[key])
           })
     return result
-
 }
 
 const handleError = (err) => {
@@ -93,14 +78,9 @@ const executeCommandArea = (command) => {
     if (typeof command === 'string' || command instanceof String) {
         executeCommand(command)
     } else if (Array.isArray(command)) {
-
         command.map(executeCommandArea)
-
-    }
-    else {
+    } else {
         logger.mark('Starting:', command.name)
-        currentArea = command.name
-
         logger.info(command.description)
         command.commands.map(executeCommandArea)
         logger.mark('Finished:', command.name)
@@ -122,12 +102,10 @@ const executeCommand = (commandIn) => {
     countCommands[currentPhase]++
     const command = replaceVars(commandIn)
     try {
-
         logger.info('EXEC [', command, ']')
         const output = execSync(command, {
             cwd: process.cwd(),
             stdio: ['pipe', 'pipe', 'pipe']
-
         })
 
         logger.info('END [ ', command, '] ')
@@ -135,8 +113,7 @@ const executeCommand = (commandIn) => {
         logger.debug('stdout was:')
         logger.debug(output.toString())
         countSuccessCommands[currentPhase]++
-    }
-    catch (err) {
+    } catch (err) {
         logger.error('FAIL [', command, ']')
         handleError(err)
     }
@@ -150,11 +127,8 @@ try {
     })
 
     logger.mark('success')
-
 } catch (e) {
-
     logger.error(e.message)
-
 }
 
 printStats()
