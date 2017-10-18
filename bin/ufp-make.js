@@ -155,7 +155,6 @@ const executeCommand = (commandIn) => {
 }
 
 try {
-    console.log(yamlmakefile)
     yamlmakefile.phases.map((phase) => {
         logger.info('Executing phase ', phase)
         currentPhase = phase
@@ -163,7 +162,6 @@ try {
         // Validate that phase has valid dependsOn config
         executeCommandArea(phaseDefinition)
     })
-    logger.mark('success')
 } catch (e) {
     logger.error(e.message)
 }
