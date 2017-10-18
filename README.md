@@ -12,6 +12,12 @@ inspired by the gitlab-ci.yml format the ufp-make strips of the docker-image con
 a collection of shell commands (defined in package.json )
 
 
+## Installation
+
+install global using
+
+    npm install ufp-make -g
+
 ## ufp-make.yml
 
     phases:

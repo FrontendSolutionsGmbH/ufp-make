@@ -20,6 +20,9 @@ test:
 
 build:
   - name: Building
+    dependsOn:
+      - lint
+      - test
     allowedToFail: false
     description: ... actually executing the build
     commands:

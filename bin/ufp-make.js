@@ -64,7 +64,7 @@ const replaceVars = (string) => {
 const handleError = (err) => {
     countFailCommands[currentPhase]++
 //    logger.error('Execution failedxxx', err)
-    logger.error(err.stderr.toString())
+    logger.info(err.stderr.toString())
     logger.debug(err.stdout.toString())
     // logger.error('Execution failed', err)
     if (!FORCE) {
@@ -82,7 +82,19 @@ const executeCommandArea = (command) => {
     } else {
         logger.mark('Starting:', command.name)
         logger.info(command.description)
-        command.commands.map(executeCommandArea)
+        var dependsOnResult = {
+            reasons: [],
+            isValid: true
+        }
+        if (command.dependsOn) {
+            dependsOnResult = isPhaseValid(command.dependsOn)
+        }
+
+        if (dependsOnResult.isValid) {
+            command.commands.map(executeCommandArea)
+        } else {
+            logger.mark('Skipping %s because of fails in ', command.name, dependsOnResult.reasons)
+        }
         logger.mark('Finished:', command.name)
     }
 }
@@ -98,6 +110,29 @@ const printStats = () => {
               }
           })
 }
+
+const isPhaseValid = (phases) => {
+    var isPhaseValid = true
+    var failReasons = []
+    if (Array.isArray(phases)) {
+        phases.map((key) => {
+            if (countFailCommands[key] > 0) {
+                isPhaseValid = false
+                failReasons.push(key)
+            }
+        })
+    } else {
+        if (countFailCommands[phases] > 0) {
+            isPhaseValid = false
+            failReasons.push(phases)
+        }
+    }
+    return {
+        reasons: failReasons,
+        isValid: isPhaseValid
+    }
+}
+
 const executeCommand = (commandIn) => {
     countCommands[currentPhase]++
     const command = replaceVars(commandIn)
@@ -120,12 +155,14 @@ const executeCommand = (commandIn) => {
 }
 
 try {
+    console.log(yamlmakefile)
     yamlmakefile.phases.map((phase) => {
         logger.info('Executing phase ', phase)
         currentPhase = phase
-        executeCommandArea(yamlmakefile[phase])
+        var phaseDefinition = yamlmakefile[phase]
+        // Validate that phase has valid dependsOn config
+        executeCommandArea(phaseDefinition)
     })
-
     logger.mark('success')
 } catch (e) {
     logger.error(e.message)
