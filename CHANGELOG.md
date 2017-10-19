@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [unreleased]
 
-## [0.1.0] - 2017-10-19
+## [0.1.2] - 2017-10-19
+
+- Console output ms 
+
+## [0.1.1] - 2017-10-19
 
 - FIX: "#!/usr/bin/env node" included in binary
 
@@ -16,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Initial Release
 
 
-[Unreleased]: https://bitbucket.org/frontendsolutions/ufp-core/branches/compare/0.1.1...develop
+[Unreleased]: https://bitbucket.org/frontendsolutions/ufp-core/branches/compare/0.1.2...develop
+[0.1.2]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.1...0.1.2
 [0.1.1]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.0...0.1.1
 [0.1.0]: https://github.com/FrontendSolutionsGmbH/ufp-make/commits/0.1.0
