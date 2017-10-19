@@ -9,6 +9,7 @@ var currentPhase = 'default'
 var countSuccessCommands = {}
 var countFailCommands = {}
 var countCommands = {}
+var executedAreas = {}
 
 const defaultOptions = {
     TARGET: 'default',
@@ -21,8 +22,6 @@ const defaultOptions = {
     }
 }
 
-var _options = defaultOptions
-
 const loadYAML = (filename) => {
     var result = {}
     try {
@@ -33,70 +32,83 @@ const loadYAML = (filename) => {
     return result
 }
 
-const initByObject = (obj) => {
-    init(obj)
-    processUfpMakeDefinition(obj)
+const initByObject = ({ufpMakeDefinition, options}) => {
+    init({
+        ufpMakeDefinition,
+        options
+    })
+    processUfpMakeDefinition({
+        ufpMakeDefinition,
+        options
+    })
 }
 
-const initByConfigFile = (pathName) => {
-    logger.info('Using config file ', pathName)
-    logger.info('Using config file ', pathName)
-    logger.info('Using config file ', pathName)
-    logger.info('Using config file ', pathName)
-    var yaml
-    if (fs.existsSync(pathName)) {
-        yaml = loadYAML(pathName)
-        initByObject(yaml)
+const initByConfigFile = ({fileName, options}) => {
+    logger.info('Using config file', fileName)
+    var ufpMakeDefinition
+    if (fs.existsSync(fileName)) {
+        ufpMakeDefinition = loadYAML(fileName)
+        initByObject({
+            ufpMakeDefinition,
+            options
+        })
     } else {
         throw new Error('YML Config not found')
     }
 }
 
-const init = (yamlmakefile) => {
-    logger.info(yamlmakefile)
-// init stats
-    Object.keys(yamlmakefile.tasks)
-          .map((task) => {
-              logger.debug('Registering task', task)
-              countCommands[task] = 0
-              countFailCommands[task] = 0
-              countSuccessCommands[task] = 0
-          })
+const init = ({ufpMakeDefinition}) => {
+    logger.info(ufpMakeDefinition)
+    // init stats
+    Object.keys(ufpMakeDefinition.tasks)
+        .map((task) => {
+            logger.debug('Registering task', task)
+            countCommands[task] = 0
+            countFailCommands[task] = 0
+            countSuccessCommands[task] = 0
+        })
 
-    Object.keys(yamlmakefile.targets)
-          .map((target) => {
-              logger.debug('Registering target', target)
-          })
+    Object.keys(ufpMakeDefinition.targets)
+        .map((target) => {
+            logger.debug('Registering target', target)
+        })
 }
-const replaceVars = (string) => {
+const replaceVars = ({string, values}) => {
     var result = string
-    Object.keys(_options.VARIABLES)
-          .map((key) => {
-              result = result.replace('${' + key + '}', _options.VARIABLES[key])
-          })
+    Object.keys(values)
+        .map((key) => {
+            result = result.replace('${' + key + '}', values[key])
+        })
     return result
 }
 
-const handleError = (err) => {
+const handleError = ({err, options}) => {
     countFailCommands[currentPhase]++
-//    logger.error('Execution failedxxx', err)
-    logger.info(err.stderr.toString())
-    logger.debug(err.stdout.toString())
+    //    logger.error('Execution failedxxx', err)
+    logger.debug('stderr:\n', err.stderr.toString())
+    logger.error('stdout:\n', err.stdout.toString())
     // logger.error('Execution failed', err)
-    if (!_options.FORCE) {
+    if (!options.FORCE) {
         throw new Error('exiting, use --FORCE to continue on fail')
     } else {
         logger.warn('Continuing build although step failed!')
     }
 }
-const executeCommandArea = (command) => {
-//    console.log('area is ', command)
+
+const executeCommandArea = ({command, options}) => {
     if (typeof command === 'string' || command instanceof String) {
-        executeCommand(command)
+        executeCommand({
+            command,
+            options
+        })
     } else if (Array.isArray(command)) {
-        command.map(executeCommandArea)
+        command.map((command) => executeCommandArea({
+            command,
+            options
+        }))
     } else {
         logger.mark('Starting:', command.name)
+        const hrstart = process.hrtime()
         logger.info(command.description)
         var dependsOnResult = {
             reasons: [],
@@ -108,25 +120,30 @@ const executeCommandArea = (command) => {
 
         if (dependsOnResult.isValid) {
             if (command.commands && command.commands.map) {
-                command.commands.map(executeCommandArea)
+                command.commands.map((command) => executeCommandArea({
+                    command,
+                    options
+                }))
             }
         } else {
-            logger.mark('Skipping %s because of fails in ', command.name, dependsOnResult.reasons)
+            logger.mark('Skipping %s because failed/not started', command.name, dependsOnResult.reasons)
         }
-        logger.mark('Finished:', command.name)
+
+        const hrend = process.hrtime(hrstart)
+        logger.mark('Finished: %s in %d.%dms', command.name, ...hrend)
     }
 }
-const printStats = () => {
+const printStats = ({countCommands, countFailCommands, executedAreas}) => {
     Object.keys(countCommands)
-          .map((key) => {
-              if (countFailCommands[key] > 0) {
-                  logger.mark('%d of %d failed for: [%s]', countFailCommands[key], countCommands[key], key)
-              } else if (countCommands[key] === 0) {
-                  logger.mark('not started: [%s]', key)
-              } else {
-                  logger.mark('succesful: [%s]', key)
-              }
-          })
+        .map((key) => {
+            if (countFailCommands[key] > 0) {
+                logger.mark('%d of %d failed for: [%s]', countFailCommands[key], countCommands[key], key)
+            } else if (!executedAreas[key]) {
+                logger.mark('not started: [%s]', key)
+            } else {
+                logger.mark('succesful: [%s]', key)
+            }
+        })
 }
 
 const isPhaseValid = (phases) => {
@@ -134,13 +151,13 @@ const isPhaseValid = (phases) => {
     var failReasons = []
     if (Array.isArray(phases)) {
         phases.map((key) => {
-            if (countFailCommands[key] > 0) {
+            if (countCommands[key] === 0 || countFailCommands[key] > 0) {
                 isPhaseValid = false
                 failReasons.push(key)
             }
         })
     } else {
-        if (countFailCommands[phases] > 0) {
+        if (countCommands[phases] === 0 || countFailCommands[phases] > 0) {
             isPhaseValid = false
             failReasons.push(phases)
         }
@@ -151,28 +168,34 @@ const isPhaseValid = (phases) => {
     }
 }
 
-const executeCommand = (commandIn) => {
+const executeCommand = ({command, options}) => {
     countCommands[currentPhase]++
-    const command = replaceVars(commandIn)
+    const commandNew = replaceVars({
+        string: command,
+        values: options.VARIABLES
+    })
     try {
-        logger.info('EXEC [', command, ']')
-        const output = execSync(command, {
+        logger.info('EXEC [', commandNew, ']')
+        const output = execSync(commandNew, {
             cwd: process.cwd(),
             stdio: ['pipe', 'pipe', 'pipe']
         })
 
-        logger.info('END [ ', command, '] ')
+        logger.info('END [ ', commandNew, '] ')
 
         logger.debug('stdout was:')
         logger.debug(output.toString())
         countSuccessCommands[currentPhase]++
     } catch (err) {
-        logger.error('FAIL [', command, ']')
-        handleError(err)
+        logger.error('FAIL [', commandNew, ']')
+        handleError({
+            err,
+            options
+        })
     }
 }
 
-const processTarget = (ufpMakeDefinition, theTarget) => {
+const processTarget = ({ufpMakeDefinition, theTarget, options}) => {
     logger.debug('Target Definition is', theTarget)
 
     theTarget.map((target) => {
@@ -182,37 +205,56 @@ const processTarget = (ufpMakeDefinition, theTarget) => {
             logger.debug('Target is referencing another target', target)
             logger.debug('Target is referencing another target', ufpMakeDefinition)
             logger.debug('Target is referencing another target', ufpMakeDefinition.targets['production'])
-            processTarget(ufpMakeDefinition, ufpMakeDefinition.targets[target])
+            processTarget({
+                ufpMakeDefinition,
+                theTarget: ufpMakeDefinition.targets[target],
+                options
+            })
         } else if (ufpMakeDefinition.tasks[target]) {
             logger.debug('Proccessing task target', target)
             currentPhase = target
-            executeCommandArea(ufpMakeDefinition.tasks[target])
+            executedAreas[target] = true
+            executeCommandArea({
+                command: ufpMakeDefinition.tasks[target],
+                options
+            })
         }
     })
 }
-const processUfpMakeDefinition = (ufpMakeDefinition) => {
-    logger.debug('Processing   ', ufpMakeDefinition)
-//    logger.debug('Options ', _options)
+const processUfpMakeDefinition = ({ufpMakeDefinition, options}) => {
+    logger.debug('Processing', ufpMakeDefinition)
+    //    logger.debug('Options ', _options)
     try {
-        var theTarget = ufpMakeDefinition.targets[_options.TARGET]
+        var theTarget = ufpMakeDefinition.targets[options.TARGET]
         if (theTarget === undefined) {
-            theTarget = ufpMakeDefinition.tasks[_options.TARGET]
+            theTarget = ufpMakeDefinition.tasks[options.TARGET]
             if (theTarget === undefined) {
-                logger.mark('Target/Task not found ', _options.TARGET)
+                logger.mark('Target/Task not found', options.TARGET)
             } else {
-                currentPhase = _options.TARGET
-                executeCommandArea(theTarget)
+                currentPhase = options.TARGET
+                executeCommandArea({
+                    command: theTarget,
+                    options
+                })
             }
         } else {
-            currentPhase = _options.TARGET
-            processTarget(ufpMakeDefinition, theTarget)
+            currentPhase = options.TARGET
+            processTarget({
+                ufpMakeDefinition,
+                theTarget,
+                options
+            })
         }
     } catch (e) {
         logger.error(e.message)
         logger.debug(e)
     }
 
-    printStats()
+    printStats({
+        countFailCommands,
+        countCommands,
+        executedAreas
+    })
     logger.mark('finished')
 }
 module.exports = {
@@ -220,18 +262,20 @@ module.exports = {
     makeFile: ({
         fileName = JsUtils.throwParam('Filename required for makeFile(), expecting a parameter object'),
         options = defaultOptions
-    }) => {
-        logger.mark('Loading makefile ', fileName)
+    } = JsUtils.throwParam('parameters object required for makeFile()')) => {
+        logger.mark('using', fileName)
+        const optionsFinal = merge(defaultOptions, options)
 
-        _options = merge(defaultOptions, options)
-
-        if (options) {
-            logger.debug('Options are: ', options)
+        if (optionsFinal) {
+            logger.debug('Options are:', optionsFinal)
         }
 
-        initByConfigFile(fileName)
+        initByConfigFile({
+            fileName,
+            options: optionsFinal
+        })
     },
-    make: ({ufpMakeDefinition, options}) => {
+    make: ({ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required for make(), expecting a parameter object'), options} = {}) => {
 
     }
 

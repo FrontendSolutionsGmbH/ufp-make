@@ -13,6 +13,7 @@ tasks:
     - name: Linting Sourcecode
       description: ... performing static code analysis
       commands:
+      - npm run lint
       - npm run lint -- -f junit -o ./test-report/eslint/eslint.xml
   test:
     - name: Testing
