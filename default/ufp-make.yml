@@ -1,32 +1,36 @@
 
-phases:
-  - lint
-  - test
-  - build
+targets:
+  default:
+    - $production
+  develop:
+    - build
+  production:
+    - test
+    - build
+    - develop
+tasks:
+  lint:
+    - name: Linting Sourcecode
+      description: ... performing static code analysis
+      commands:
+      - echo "STEPPING LINT"
+      - echo "${UFP_VERSION}"
+      - npm run lint
+  test:
+    - name: Testing
+      description: ... performs the unit tests
+      commands:
+      - npm run test
+  build:
+    - name: Building
+      dependsOn:
+        - lint
+        - test
+      allowedToFail: false
+      description: ... actually executing the build
+      commands:
+      - npm run compile
 
-lint:
-  - name: Linting Sourcecode
-    description: ... performing static code analysis
-    commands:
-    - echo "STEPPING LINT"
-    - echo "${UFP_VERSION}"
-    - npm run lint
-
-test:
-  - name: Testing
-    description: ... performs the unit tests
-    commands:
-    - npm run test
-
-build:
-  - name: Building
-    dependsOn:
-      - lint
-      - test
-    allowedToFail: false
-    description: ... actually executing the build
-    commands:
-    - npm run compile
 
 
 

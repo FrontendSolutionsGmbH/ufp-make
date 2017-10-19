@@ -27,9 +27,11 @@
   },
   "homepage": "https://github.com/FrontendSolutionsGmbH/ufp-make#readme",
   "dependencies": {
+    "deepmerge": "^2.0.0",
     "eslint": "^4.9.0",
     "js-yaml": "^3.10.0",
     "log4js": "^2.3.7",
+    "prop-types": "^15.6.0",
     "yargs": "^9.0.1"
   },
   "devDependencies": {
