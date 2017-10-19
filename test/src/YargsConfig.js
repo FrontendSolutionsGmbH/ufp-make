@@ -16,5 +16,4 @@ describe('YargsConfig', () => {
         expect(YargsConfig.argv).to.have.own.property('CONFIG')
         expect(YargsConfig.argv).to.have.own.property('UFP_API_TYPE')
     })
-
 })
