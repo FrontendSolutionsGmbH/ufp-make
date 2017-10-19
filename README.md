@@ -37,3 +37,39 @@ or a collection of commands
         name: theCommandName
         description: theCommandDescription outputed on loglevel INFO
         commands: [array of commands]
+
+
+## Cli
+
+    > ufp-make --help
+
+    Commands:
+      default     build target default
+      develop     build target develop
+      production  build target production
+      lint        execute task lint
+      test        execute task test
+      build       execute task build
+
+    Options:
+      --help              Show help                                        [boolean]
+      --version           Show version number                              [boolean]
+      --FORCE             allow fail of single steps      [boolean] [default: false]
+      --CLEAN             rimraf build folders before start
+                                                          [boolean] [default: false]
+      --UFP_VERSION, -v   project specific version,
+                          provided as UFP_VERSION environment variable
+                                                    [default: "ufp-version-default"]
+      --UFP_API_TYPE, -a  api type,
+                          provided as UFP_API_TYPE environment variable
+                                         [choices: "live", "mock"] [default: "live"]
+      --UFP_NODE_ENV, -n  node environment value,
+                          provided as NODE_ENV environment variable
+              [choices: "production", "development", "test"] [default: "production"]
+      --UFP_THEME, -t     theming ,
+                          provided as UFP_THEME environment variable
+                                                                [default: "default"]
+      --LOG_LEVEL, -l     Log Level following log4j, higher levels include lower
+                          ones
+      [choices: "ERROR", "WARN", "INFO", "DEBUG", "TRACE", "ALL"] [default: "ERROR"]
+      --CONFIG, -c        Configuration file              [default: "ufp-make.json"]
