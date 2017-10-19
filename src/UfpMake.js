@@ -2,11 +2,9 @@ const yaml = require('js-yaml')
 const logger = require('../src/Logger')('ufp-make')
 const fs = require('fs')
 const execSync = require('child_process').execSync
-const Constants = require('./Constants')
 const JsUtils = require('./JsUtils')
 var merge = require('deepmerge')
 
-logger.mark('start')
 var currentPhase = 'default'
 var countSuccessCommands = {}
 var countFailCommands = {}
@@ -109,7 +107,9 @@ const executeCommandArea = (command) => {
         }
 
         if (dependsOnResult.isValid) {
-            command.commands.map(executeCommandArea)
+            if (command.commands && command.commands.map) {
+                command.commands.map(executeCommandArea)
+            }
         } else {
             logger.mark('Skipping %s because of fails in ', command.name, dependsOnResult.reasons)
         }
@@ -192,7 +192,7 @@ const processTarget = (ufpMakeDefinition, theTarget) => {
 }
 const processUfpMakeDefinition = (ufpMakeDefinition) => {
     logger.debug('Processing   ', ufpMakeDefinition)
-    logger.debug('Options ', _options)
+//    logger.debug('Options ', _options)
     try {
         var theTarget = ufpMakeDefinition.targets[_options.TARGET]
         if (theTarget === undefined) {
@@ -209,7 +209,7 @@ const processUfpMakeDefinition = (ufpMakeDefinition) => {
         }
     } catch (e) {
         logger.error(e.message)
-//        logger.debug(e)
+        logger.debug(e)
     }
 
     printStats()
@@ -221,12 +221,14 @@ module.exports = {
         fileName = JsUtils.throwParam('Filename required for makeFile(), expecting a parameter object'),
         options = defaultOptions
     }) => {
-        logger.mark('Loading makefile ', fileName, options)
-        if (options) {
-            logger.mark('Loading makefile ', fileName, options)
-        }
+        logger.mark('Loading makefile ', fileName)
 
         _options = merge(defaultOptions, options)
+
+        if (options) {
+            logger.debug('Options are: ', options)
+        }
+
         initByConfigFile(fileName)
     },
     make: ({ufpMakeDefinition, options}) => {

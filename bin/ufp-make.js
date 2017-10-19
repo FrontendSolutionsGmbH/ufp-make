@@ -5,8 +5,6 @@ const fs = require('fs')
 const Constants = require('../src/Constants')
 const UfpMake = require('../src/UfpMake')
 
-console.log('key', process.argv)
-console.log('key', Constants)
 logger.mark('start')
 
 logger.debug('Command Line Parameters are', JSON.stringify(yargsConfig.argv))

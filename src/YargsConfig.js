@@ -21,7 +21,7 @@ if (fs.existsSync(process.argv.CONFIG)) {
     pre = YamlLoader.loadYAML(yargs.argv.CONFIG)
 }
 if (fs.existsSync(path.join(process.cwd(), 'ufp-make.yml'))) {
-    pre = YamlLoader.loadYAML(yargs.argv.CONFIG)
+    pre = YamlLoader.loadYAML(path.join(process.cwd(), 'ufp-make.yml'))
 } else {
     pre = YamlLoader.loadYAML(path.join(__dirname, '../default/ufp-make.yml'))
 }

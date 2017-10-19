@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+<testsuite package="org.eslint" time="0" tests="0" errors="0" name="D:\ARBEIT\ufp-make\src\Constants.js">
+</testsuite>
+<testsuite package="org.eslint" time="0" tests="0" errors="0" name="D:\ARBEIT\ufp-make\src\JsUtils.js">
+</testsuite>
+<testsuite package="org.eslint" time="0" tests="0" errors="0" name="D:\ARBEIT\ufp-make\src\Logger.js">
+</testsuite>
+<testsuite package="org.eslint" time="0" tests="1" errors="1" name="D:\ARBEIT\ufp-make\src\UfpMake.js">
+<testcase time="0" name="org.eslint.no-unused-vars"><failure message="&apos;Constants&apos; is assigned a value but never used."><![CDATA[line 5, col 7, Error - &apos;Constants&apos; is assigned a value but never used. (no-unused-vars)]]></failure></testcase>
+</testsuite>
+<testsuite package="org.eslint" time="0" tests="0" errors="0" name="D:\ARBEIT\ufp-make\src\YamlLoader.js">
+</testsuite>
+<testsuite package="org.eslint" time="0" tests="0" errors="0" name="D:\ARBEIT\ufp-make\src\YargsConfig.js">
+</testsuite>
+<testsuite package="org.eslint" time="0" tests="0" errors="0" name="D:\ARBEIT\ufp-make\bin\ufp-make.js">
+</testsuite>
+</testsuites>

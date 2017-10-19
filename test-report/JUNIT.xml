@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" timestamp="2017-10-19T14:04:06" time="0.002" tests="7" failures="0">
+  <testsuite name="Constants" timestamp="2017-10-19T14:04:06" tests="4" failures="0" time="0.001">
+    <testcase name="Constants should exist" time="0.001" className="should exist">
+    </testcase>
+    <testcase name="Constants .MAKE_OPTIONS should exist" time="0" className=".MAKE_OPTIONS should exist">
+    </testcase>
+    <testcase name="Constants .YAML_FILENAME should exist" time="0" className=".YAML_FILENAME should exist">
+    </testcase>
+    <testcase name="Constants .YAML_FILENAME should be equal to ufp-make.yml" time="0" className=".YAML_FILENAME should be equal to ufp-make.yml">
+    </testcase>
+  </testsuite>
+  <testsuite name="JsUtils" timestamp="2017-10-19T14:04:06" tests="3" failures="0" time="0.001">
+    <testcase name="JsUtils should exist" time="0" className="should exist">
+    </testcase>
+    <testcase name="JsUtils .throwParam should exist" time="0" className=".throwParam should exist">
+    </testcase>
+    <testcase name="JsUtils .throwParam() should throw error" time="0.001" className=".throwParam() should throw error">
+    </testcase>
+  </testsuite>
+</testsuites>
