@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const path = require('path')
 const yargsConfig = require('../src/YargsConfig')
 const logger = require('../src/Logger')('ufp-make')

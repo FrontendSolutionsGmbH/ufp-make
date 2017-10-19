@@ -20,7 +20,19 @@
   "bin": {
     "ufp-make": "bin/ufp-make.js"
   },
-  "author": "c.Kleinhuis",
+  "author": "Frontend Solutions GmbH",
+  "contributors": [
+    {
+      "name": "Christian Kleinhuis",
+      "email": "ck@froso.de",
+      "url": "https://froso.de/"
+    },
+    {
+      "name": "Christian Kleinhuis",
+      "email": "ck@digitalgott.de",
+      "url": "http://digitalgott.de/"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/FrontendSolutionsGmbH/ufp-make/issues"
