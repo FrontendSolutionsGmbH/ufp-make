@@ -3,14 +3,22 @@ const logger = require('../src/Logger')('ufp-make')
 const fs = require('fs')
 const execSync = require('child_process').execSync
 const JsUtils = require('./JsUtils')
-var merge = require('deepmerge')
+let merge = require('deepmerge')
 
-var currentPhase = 'default'
-var countSuccessCommands = {}
-var countFailCommands = {}
-var countCommands = {}
-var executedAreas = {}
+let currentPhase = 'default'
 
+let countSuccessCommands = {}
+let countFailCommands = {}
+let countCommands = {}
+let executedAreas = {}
+
+/**
+ * we want to provide a set of variables and default option
+ * as core feature of the build mechanics, so version, api_type, theme, node_env
+ * are the ones most used for building in the continous pipeline... *
+ *
+ * @type {{TARGET: string, FORCE: boolean, VARIABLES: {UFP_VERSION: string, UFP_API_TYPE: string, UFP_THEME: string, UFP_NODE_ENV: string}}}
+ */
 const defaultOptions = {
     TARGET: 'default',
     FORCE: false,
@@ -22,8 +30,13 @@ const defaultOptions = {
     }
 }
 
+/**
+ * utility wrapper for yaml loader
+ * @param filename
+ * @returns {{}}
+ */
 const loadYAML = (filename) => {
-    var result = {}
+    let result = {}
     try {
         result = yaml.safeLoad(fs.readFileSync(filename, 'utf8'))
     } catch (e) {
@@ -32,6 +45,13 @@ const loadYAML = (filename) => {
     return result
 }
 
+/**
+ * core api entry point here is the start of the processing of a config
+ * object
+ *
+ * @param ufpMakeDefinition
+ * @param options
+ */
 const initByObject = ({ufpMakeDefinition, options}) => {
     init({
         ufpMakeDefinition,
@@ -43,9 +63,15 @@ const initByObject = ({ufpMakeDefinition, options}) => {
     })
 }
 
+/**
+ * loads a specific file and parses content as yml
+ * and executes the parsing
+ * @param fileName
+ * @param options
+ */
 const initByConfigFile = ({fileName, options}) => {
     logger.info('Using config file', fileName)
-    var ufpMakeDefinition
+    let ufpMakeDefinition
     if (fs.existsSync(fileName)) {
         ufpMakeDefinition = loadYAML(fileName)
         initByObject({
@@ -57,6 +83,10 @@ const initByConfigFile = ({fileName, options}) => {
     }
 }
 
+/**
+ * resets the *basic* counters for statistics
+ * @param ufpMakeDefinition
+ */
 const init = ({ufpMakeDefinition}) => {
     logger.info(ufpMakeDefinition)
     // init stats
@@ -73,15 +103,26 @@ const init = ({ufpMakeDefinition}) => {
             logger.debug('Registering target', target)
         })
 }
+/**
+ * template utility string method replacing template string variable by hand
+ * @param string
+ * @param values
+ * @returns {*}
+ */
 const replaceVars = ({string, values}) => {
-    var result = string
+    let result = string
     Object.keys(values)
         .map((key) => {
             result = result.replace('${' + key + '}', values[key])
         })
     return result
 }
-
+/**
+ * we want to control termination of program during build if explicitly
+ * set to NOT fail just log the errors but with most information possible
+ * @param err
+ * @param options
+ */
 const handleError = ({err, options}) => {
     countFailCommands[currentPhase]++
     //    logger.error('Execution failedxxx', err)
@@ -95,6 +136,21 @@ const handleError = ({err, options}) => {
     }
 }
 
+/**
+ * a command area can be of type string, array, commandArea
+ * a commandarea is providing more information that is outputed
+ * throughet the execution
+ *
+ * a single string command is forwarded to the executeCommand
+ *
+ * if its an array each entry is forwarded to itSelf
+ *
+ * in fact this method does most of the work determining what to do
+ * and features child areas as well
+ *
+ * @param command - string,array,object
+ * @param options
+ */
 const executeCommandArea = ({command, options}) => {
     if (typeof command === 'string' || command instanceof String) {
         executeCommand({
@@ -110,7 +166,7 @@ const executeCommandArea = ({command, options}) => {
         logger.mark('Starting:', command.name)
         const hrstart = process.hrtime()
         logger.info(command.description)
-        var dependsOnResult = {
+        let dependsOnResult = {
             reasons: [],
             isValid: true
         }
@@ -133,6 +189,14 @@ const executeCommandArea = ({command, options}) => {
         logger.mark('Finished: %s in %d.%dms', command.name, ...hrend)
     }
 }
+/**
+ *
+ * basic statistics output for end of program
+ *
+ * @param countCommands
+ * @param countFailCommands
+ * @param executedAreas
+ */
 const printStats = ({countCommands, countFailCommands, executedAreas}) => {
     Object.keys(countCommands)
         .map((key) => {
@@ -145,10 +209,19 @@ const printStats = ({countCommands, countFailCommands, executedAreas}) => {
             }
         })
 }
-
+/**
+ * a (for now) basic determination if a task has been (succsesfully) executed either it
+ * has not even started or executed with errors which both leads to a
+ *
+ * return object contains reason for failing by naming the failed tasks and
+ * if all ok result.isValid=true
+ *
+ * @param phases
+ * @returns {{reasons: Array, isValid: boolean}}
+ */
 const isPhaseValid = (phases) => {
-    var isPhaseValid = true
-    var failReasons = []
+    let isPhaseValid = true
+    let failReasons = []
     if (Array.isArray(phases)) {
         phases.map((key) => {
             if (countCommands[key] === 0 || countFailCommands[key] > 0) {
@@ -167,7 +240,13 @@ const isPhaseValid = (phases) => {
         isValid: isPhaseValid
     }
 }
-
+/**
+ * the execution of a single cli command string using execSync from the node
+ * library options flag if any exception shall lead to termination of program
+ *
+ * @param command
+ * @param options
+ */
 const executeCommand = ({command, options}) => {
     countCommands[currentPhase]++
     const commandNew = replaceVars({
@@ -195,6 +274,14 @@ const executeCommand = ({command, options}) => {
     }
 }
 
+/**
+ * iterate through a list of strings and forward to processTarget if its another target
+ * or process task (commandArea) otherwise
+ *
+ * @param ufpMakeDefinition
+ * @param theTarget list of strings for targets/tasks
+ * @param options
+ */
 const processTarget = ({ufpMakeDefinition, theTarget, options}) => {
     logger.debug('Target Definition is', theTarget)
 
@@ -204,7 +291,7 @@ const processTarget = ({ufpMakeDefinition, theTarget, options}) => {
         if (ufpMakeDefinition.targets[target]) {
             logger.debug('Target is referencing another target', target)
             logger.debug('Target is referencing another target', ufpMakeDefinition)
-            logger.debug('Target is referencing another target', ufpMakeDefinition.targets['production'])
+            logger.debug('Target is referencing another target', ufpMakeDefinition.targets[target])
             processTarget({
                 ufpMakeDefinition,
                 theTarget: ufpMakeDefinition.targets[target],
@@ -221,11 +308,23 @@ const processTarget = ({ufpMakeDefinition, theTarget, options}) => {
         }
     })
 }
+/**
+ * this method is meant to process the full blow makeDefinition
+ * which is parsing the object consisting of targets/task objects
+ *
+ * the tasks define single actions
+ *
+ * the targets are the main entry point listing tasks or targets to
+ * be executed in that order
+ *
+ * @param ufpMakeDefinition
+ * @param options
+ */
 const processUfpMakeDefinition = ({ufpMakeDefinition, options}) => {
     logger.debug('Processing', ufpMakeDefinition)
     //    logger.debug('Options ', _options)
     try {
-        var theTarget = ufpMakeDefinition.targets[options.TARGET]
+        let theTarget = ufpMakeDefinition.targets[options.TARGET]
         if (theTarget === undefined) {
             theTarget = ufpMakeDefinition.tasks[options.TARGET]
             if (theTarget === undefined) {
@@ -257,6 +356,23 @@ const processUfpMakeDefinition = ({ufpMakeDefinition, options}) => {
     })
     logger.mark('finished')
 }
+
+/**
+ * the module exports which is its api
+ *
+ * @type {{
+ *
+ * makeFile: ((p1?:{fileName?: *, options?: *})),
+ *
+ * makefile is meant to be used as api call of a config filename.yml
+ * options object is usually parsed commandline but can be filled as liked (see readme for values)
+ *
+ * make: ((p1?:{ufpMakeDefinition?: *, options: *}))}}
+ *
+ * make is the object api call of a full blown UfpMakeDefinition (see readme for syntax)
+ * options object is usually parsed commandline but can be filled as liked (see readme for values)
+ *
+ */
 module.exports = {
 
     makeFile: ({
@@ -276,7 +392,10 @@ module.exports = {
         })
     },
     make: ({ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required for make(), expecting a parameter object'), options} = {}) => {
-
+        initByObject({
+            ufpMakeDefinition,
+            options
+        })
     }
 
 }

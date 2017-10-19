@@ -73,3 +73,8 @@ or a collection of commands
                           ones
       [choices: "ERROR", "WARN", "INFO", "DEBUG", "TRACE", "ALL"] [default: "ERROR"]
       --CONFIG, -c        Configuration file              [default: "ufp-make.json"]
+
+
+## Known Limitation of v0.1.x
+
+the auto build of dependant tasks is not implemented

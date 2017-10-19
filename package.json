@@ -1,6 +1,10 @@
 {
   "name": "ufp-make",
   "version": "0.0.0",
+  "engines": {
+    "node": ">=8.0.0",
+    "npm": ">=5.0.0"
+  },
   "description": "ufp-make cli batch execution",
   "main": "src/UfpCore.js",
   "scripts": {
