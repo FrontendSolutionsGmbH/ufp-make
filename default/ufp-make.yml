@@ -1,7 +1,7 @@
 
 targets:
   default:
-    - $production
+    - production
   develop:
     - build
   production:
