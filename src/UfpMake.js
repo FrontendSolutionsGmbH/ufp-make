@@ -2,6 +2,7 @@ const yaml = require('js-yaml')
 const logger = require('../src/Logger')('ufp-make')
 const fs = require('fs')
 const execSync = require('child_process').execSync
+const Constants = require('./Constants')
 const JsUtils = require('./JsUtils')
 var merge = require('deepmerge')
 

@@ -1,6 +1,6 @@
 const yargs = require('yargs')
 const YamlLoader = require('./YamlLoader')
-const Constants = require('./constants')
+const Constants = require('./Constants')
 const path = require('path')
 
 const fs = require('fs')

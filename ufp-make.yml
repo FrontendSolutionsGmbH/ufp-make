@@ -13,11 +13,7 @@ tasks:
     - name: Linting Sourcecode
       description: ... performing static code analysis
       commands:
-      - echo "STEPPING LINT"
-      - echo "${UFP_VERSION}"
       - npm run lint
-      - npm run lint -- -f junit -o ${TEST_REPORT_FOLDER}/eslint
-
   test:
     - name: Testing
       description: ... performs the unit tests
@@ -30,8 +26,8 @@ tasks:
         - test
       allowedToFail: false
       description: ... actually executing the build
-
-
+  publish:
+    - npm publish
 
 
 
