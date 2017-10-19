@@ -63,7 +63,7 @@ module.exports = {
         'CONFIG': {
             describe: 'Configuration file',
             alias: 'c',
-            default: 'ufp-make.json'
+            default: 'ufp-make.yml'
 
         }
     }
