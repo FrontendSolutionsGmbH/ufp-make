@@ -7,7 +7,6 @@ const loadYAML = (filename) => {
 
 module.exports = {
 
-
     loadYAML
 
 }
