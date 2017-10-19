@@ -2,7 +2,7 @@ const path = require('path')
 const yargsConfig = require('../src/YargsConfig')
 const logger = require('../src/Logger')('ufp-make')
 const fs = require('fs')
-const Constants = require('../src/constants')
+const Constants = require('../src/Constants')
 const UfpMake = require('../src/UfpMake')
 
 console.log('key', process.argv)
