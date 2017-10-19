@@ -5,9 +5,9 @@ targets:
   develop:
     - build
   production:
+    - lint
     - test
     - build
-    - develop
 tasks:
   lint:
     - name: Linting Sourcecode
