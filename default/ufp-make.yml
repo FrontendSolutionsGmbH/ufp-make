@@ -28,8 +28,7 @@ tasks:
         - test
       allowedToFail: false
       description: ... actually executing the build
-      commands:
-      - npm run compile
+
 
 
 

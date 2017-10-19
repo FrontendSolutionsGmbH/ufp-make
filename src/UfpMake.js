@@ -192,12 +192,23 @@ const processTarget = (ufpMakeDefinition, theTarget) => {
 const processUfpMakeDefinition = (ufpMakeDefinition) => {
     logger.debug('Processing   ', ufpMakeDefinition)
     logger.debug('Options ', _options)
-    const theTarget = ufpMakeDefinition.targets[_options.TARGET]
-
     try {
-        processTarget(ufpMakeDefinition, theTarget)
+        var theTarget = ufpMakeDefinition.targets[_options.TARGET]
+        if (theTarget === undefined) {
+            theTarget = ufpMakeDefinition.tasks[_options.TARGET]
+            if (theTarget === undefined) {
+                logger.mark('Target/Task not found ', _options.TARGET)
+            } else {
+                currentPhase = _options.TARGET
+                executeCommandArea(theTarget)
+            }
+        } else {
+            currentPhase = _options.TARGET
+            processTarget(ufpMakeDefinition, theTarget)
+        }
     } catch (e) {
         logger.error(e.message)
+//        logger.debug(e)
     }
 
     printStats()

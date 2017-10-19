@@ -20,24 +20,16 @@ install global using
 
 ## ufp-make.yml
 
-    phases:
-        [Array of phase Names]
+    targets:
+        [targetName]: [Array of targets or tasks]
+    tasks:
+        [taskName]: [Array of Commands]
 
-    [phaseName]:
-        [Array of commands]
-
-the command structure inside the [phaseName] definition is as follows:
+the command structure inside the [taskName] definition is as follows:
 
 a command can either be:
 
     command: a single cli command
-
-a command object with name and description
-
-    command:
-        name: theCommandName
-        description: theCommandDescription outputed on loglevel INFO
-        command: a single cli command
 
 or a collection of commands
 
