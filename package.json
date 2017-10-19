@@ -1,6 +1,6 @@
 {
   "name": "ufp-make",
-  "version": "x.x.x",
+  "version": "0.0.0",
   "description": "ufp-make cli batch execution",
   "main": "index.js",
   "scripts": {
