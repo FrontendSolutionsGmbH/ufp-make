@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint src bin",
     "lint:fix": "npm run lint -- --fix",
-    "test": "nyc --report-dir=test-report/clover --reporter=clover node ./node_modules/mocha/bin/mocha --recursive --reporter mocha-junit-and-console-reporter  --reporter-options mochaFile=./test-report/JUNIT.xml",
+    "test": "nyc --report-dir=test-report/coverage/clover --reporter=clover node ./node_modules/mocha/bin/mocha --recursive --reporter mocha-junit-and-console-reporter  --reporter-options mochaFile=./test-report/JUNIT.xml",
     "compile": "echo \"Error: no compile specified\" && exit 0"
   },
   "repository": {
