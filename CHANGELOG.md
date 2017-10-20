@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [unreleased]
 
-## [0.1.3] - 2017-10-19
+## [0.1.4] - 2017-10-20
+
+- fix line endings to make shell execution actually work under linux
+
+## [0.1.3] - 2017-10-20
 
 - fix: main module entry point in package.json
 
@@ -24,7 +28,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Initial Release
 
 
-[Unreleased]: https://bitbucket.org/frontendsolutions/ufp-core/branches/compare/0.1.3...develop
+[Unreleased]: https://bitbucket.org/frontendsolutions/ufp-core/branches/compare/0.1.4...develop
+[0.1.4]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.3...0.1.4
 [0.1.3]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.2...0.1.3
 [0.1.2]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.1...0.1.2
 [0.1.1]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.0...0.1.1
