@@ -6,7 +6,7 @@
     "npm": ">=5.0.0"
   },
   "description": "ufp-make cli batch execution",
-  "main": "src/UfpCore.js",
+  "main": "src/UfpMake.js",
   "scripts": {
     "make": "node bin/ufp-make",
     "lint": "eslint src bin test",
