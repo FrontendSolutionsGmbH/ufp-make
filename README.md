@@ -45,6 +45,7 @@ or a collection of commands
 the api offers 2 methods:
 
     ufpApi.makeFile({fileName,options})
+
     ufpApi.make({ufpMakeDefinition,options})
 
 
@@ -54,12 +55,14 @@ the api offers 2 methods:
     > ufp-make --help
 
     Commands:
+    {
       default     build target default
       develop     build target develop
       production  build target production
       lint        execute task lint
       test        execute task test
       build       execute task build
+    } parsed from local ufp-make.yml
 
     Options:
       --help              Show help                                        [boolean]
