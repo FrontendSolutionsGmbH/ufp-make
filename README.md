@@ -38,18 +38,31 @@ or a collection of commands
         description: theCommandDescription outputed on loglevel INFO
         commands: [array of commands]
 
+## Api
+
+    const ufpApi = require('ufp-api')
+
+the api offers 2 methods:
+
+    ufpApi.makeFile({fileName,options})
+
+    ufpApi.make({ufpMakeDefinition,options})
+
+
 
 ## Cli
 
     > ufp-make --help
 
     Commands:
+    {
       default     build target default
       develop     build target develop
       production  build target production
       lint        execute task lint
       test        execute task test
       build       execute task build
+    } parsed from local ufp-make.yml
 
     Options:
       --help              Show help                                        [boolean]
