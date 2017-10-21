@@ -1,6 +1,7 @@
 const yaml = require('js-yaml')
 const logger = require('../src/Logger')('ufp-make')
 const fs = require('fs')
+const path = require('path')
 const execSync = require('child_process').execSync
 const JsUtils = require('./JsUtils')
 let merge = require('deepmerge')
@@ -11,6 +12,9 @@ let countSuccessCommands = {}
 let countFailCommands = {}
 let countCommands = {}
 let executedAreas = {}
+let cwd = '.'
+
+let currentStack = []
 
 /**
  * we want to provide a set of variables and default option
@@ -73,11 +77,15 @@ const initByConfigFile = ({fileName, options}) => {
     logger.info('Using config file', fileName)
     let ufpMakeDefinition
     if (fs.existsSync(fileName)) {
-        ufpMakeDefinition = loadYAML(fileName)
-        initByObject({
-            ufpMakeDefinition,
-            options
-        })
+        try {
+            ufpMakeDefinition = loadYAML(fileName)
+            initByObject({
+                ufpMakeDefinition,
+                options
+            })
+        } catch (e) {
+            //    logger.error(e.message)
+        }
     } else {
         throw new Error('YML Config not found')
     }
@@ -124,10 +132,17 @@ const replaceVars = ({string, values}) => {
  * @param options
  */
 const handleError = ({err, options}) => {
-    countFailCommands[currentPhase]++
-    //    logger.error('Execution failedxxx', err)
-    logger.debug('stderr:\n', err.stderr.toString())
-    logger.error('stdout:\n', err.stdout.toString())
+    incCommandFail()
+    logger.error('Execution failed', err)
+    logger.error('Execution failed', err.message)
+    if (err && err.stderr && err.stderr.toString) {
+        logger.debug('stderr:\n', err.stderr.toString())
+    }
+
+    if (err && err.stdout && err.stdout.toString) {
+        logger.error('stdout:\n', err.stdout.toString())
+    }
+
     // logger.error('Execution failed', err)
     if (!options.FORCE) {
         throw new Error('exiting, use --FORCE to continue on fail')
@@ -163,7 +178,9 @@ const executeCommandArea = ({command, options}) => {
             options
         }))
     } else {
-        logger.mark('Starting:', command.name)
+        if (command && command.name) {
+            logger.mark('Starting:', command.name)
+        }
         const hrstart = process.hrtime()
         logger.info(command.description)
         let dependsOnResult = {
@@ -175,6 +192,16 @@ const executeCommandArea = ({command, options}) => {
         }
 
         if (dependsOnResult.isValid) {
+
+            if (command.cwd) {
+                logger.mark('Setting working directory %s', command.cwd)
+                if (fs.existsSync(command.cwd)) {
+                    cwd = command.cwd
+                } else {
+                    throw new Error('Path not found ' + command.cwd)
+                }
+            }
+
             if (command.commands && command.commands.map) {
                 command.commands.map((command) => executeCommandArea({
                     command,
@@ -186,7 +213,10 @@ const executeCommandArea = ({command, options}) => {
         }
 
         const hrend = process.hrtime(hrstart)
-        logger.mark('Finished: %s in %d.%dms', command.name, ...hrend)
+
+        if (command && command.name) {
+            logger.mark('Finished: %s in %d.%dms', command.name, ...hrend)
+        }
     }
 }
 /**
@@ -202,7 +232,7 @@ const printStats = ({countCommands, countFailCommands, executedAreas}) => {
         .map((key) => {
             if (countFailCommands[key] > 0) {
                 logger.mark('%d of %d failed for: [%s]', countFailCommands[key], countCommands[key], key)
-            } else if (!executedAreas[key]) {
+            } else if (!executedAreas[key] && countCommands[key] == 0) {
                 logger.mark('not started: [%s]', key)
             } else {
                 logger.mark('succesful: [%s]', key)
@@ -240,6 +270,36 @@ const isPhaseValid = (phases) => {
         isValid: isPhaseValid
     }
 }
+
+const incCommandExecution = ({command}) => {
+    countCommands[currentPhase]++
+    const key = currentStack.join('.') + '.' + currentPhase
+    if (!isNaN(countCommands[key])) {
+        countCommands[key]++
+    } else {
+        countCommands[key] = 1
+    }
+}
+
+const incCommandFail = () => {
+    countFailCommands[currentPhase]++
+    const key = currentStack.join('.') + '.' + currentPhase
+    if (!isNaN(countFailCommands[key])) {
+        countFailCommands[key]++
+    } else {
+        countFailCommands[key] = 1
+    }
+}
+const incCommandSuccess = ({command}) => {
+    countSuccessCommands [currentPhase]++
+    const key = currentStack.join('.') + '.' + currentPhase
+    if (!isNaN(countSuccessCommands[key])) {
+        countSuccessCommands[key]++
+    } else {
+        countSuccessCommands[key] = 1
+    }
+}
+
 /**
  * the execution of a single cli command string using execSync from the node
  * library options flag if any exception shall lead to termination of program
@@ -248,25 +308,37 @@ const isPhaseValid = (phases) => {
  * @param options
  */
 const executeCommand = ({command, options}) => {
-    countCommands[currentPhase]++
+    incCommandExecution({command})
     const commandNew = replaceVars({
         string: command,
         values: options.VARIABLES
     })
     try {
+        const currentCwd = path.join(process.cwd(), cwd)
         logger.info('EXEC [', commandNew, ']')
+        logger.info('IN PATH [', currentCwd, ']')
+        console.log('-----------', process.env.PATH);
+        console.log('-----------', process.env.PATH);
+
+        if (!fs.existsSync(currentCwd)) {
+            throw new Error('Path not found: ' + currentCwd)
+        }
+
         const output = execSync(commandNew, {
-            cwd: process.cwd(),
+            cwd: cwd,
+            env: Object.assign({}, process.env, options.VARIABLES),
             stdio: ['pipe', 'pipe', 'pipe']
         })
 
         logger.info('END [ ', commandNew, '] ')
 
         logger.debug('stdout was:')
-        logger.debug(output.toString())
-        countSuccessCommands[currentPhase]++
+        if (output && output.toString) {
+            logger.debug(output.toString())
+        }
+        incCommandSuccess({command})
     } catch (err) {
-        logger.error('FAIL [', commandNew, ']')
+        logger.error('FAIL [', commandNew, ']', err.message)
         handleError({
             err,
             options
@@ -282,9 +354,10 @@ const executeCommand = ({command, options}) => {
  * @param theTarget list of strings for targets/tasks
  * @param options
  */
-const processTarget = ({ufpMakeDefinition, theTarget, options}) => {
+const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
     logger.debug('Target Definition is', theTarget)
-
+    // logger.mark('currentstack is ', currentStack)
+    currentStack.push(name)
     theTarget.map((target) => {
         logger.info('Proccessing target', target)
         // check if target is another target or a task
@@ -292,7 +365,10 @@ const processTarget = ({ufpMakeDefinition, theTarget, options}) => {
             logger.debug('Target is referencing another target', target)
             logger.debug('Target is referencing another target', ufpMakeDefinition)
             logger.debug('Target is referencing another target', ufpMakeDefinition.targets[target])
+            // reset cwd()
+            // cwd = '.'
             processTarget({
+                name: target,
                 ufpMakeDefinition,
                 theTarget: ufpMakeDefinition.targets[target],
                 options
@@ -307,6 +383,8 @@ const processTarget = ({ufpMakeDefinition, theTarget, options}) => {
             })
         }
     })
+    //logger.mark('currentstack is ', currentStack)
+    currentStack.pop()
 }
 /**
  * this method is meant to process the full blow makeDefinition
@@ -321,6 +399,7 @@ const processTarget = ({ufpMakeDefinition, theTarget, options}) => {
  * @param options
  */
 const processUfpMakeDefinition = ({ufpMakeDefinition, options}) => {
+    logger.debug('Processing', options.TARGET)
     logger.debug('Processing', ufpMakeDefinition)
     //    logger.debug('Options ', _options)
     try {
@@ -339,6 +418,7 @@ const processUfpMakeDefinition = ({ufpMakeDefinition, options}) => {
         } else {
             currentPhase = options.TARGET
             processTarget({
+                name: options.TARGET,
                 ufpMakeDefinition,
                 theTarget,
                 options

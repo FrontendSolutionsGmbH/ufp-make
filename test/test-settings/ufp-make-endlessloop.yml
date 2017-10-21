@@ -1,0 +1,32 @@
+# this setting is meant to check for inter-referencing nodes that whould create an endless loop
+
+targets:
+  default:
+    - example0
+  example0:
+    - example1
+  example1:
+    - example0
+  example2:
+    - doit
+
+tasks:
+  clean:
+    - name: Clean
+      description: cleaning up project folder
+      commands:
+        - echo "Test Clean"
+        - exit 1
+  install:
+    - name: Install Dependencies
+      description: ... downloading dependencies from npmjs.org
+      commands:
+      - echo "Test Install"
+  make:
+    - name: Making
+      description: executes the make command of project
+      commands:
+      - echo "Test Make"
+
+
+

@@ -1,0 +1,58 @@
+
+targets:
+  default:
+    - example0
+    - example1
+    - example2
+    - example3
+    - example4
+    - example5
+    - example6
+    - example7
+    - example8
+    - example9
+  example0:
+    - doit
+  example1:
+    - doit
+  example2:
+    - doit
+  example3:
+    - doit
+  example4:
+    - doit
+  example5:
+    - doit
+  example6:
+    - doit
+  example7:
+    - doit
+  example8:
+    - doit
+  example9:
+    - doit
+  doit:
+    - clean
+    - install
+    - make
+
+tasks:
+  clean:
+    - name: Clean
+      description: cleaning up project folder
+      commands:
+        - echo "Test Clean"
+        - exit 1
+  install:
+    - name: Install Dependencies
+      description: ... downloading dependencies from npmjs.org
+      commands:
+      - echo "Test Install"
+  make:
+    - name: Making
+      description: executes the make command of project
+      commands:
+      - echo "Test Make"
+
+
+
