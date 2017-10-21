@@ -55,7 +55,6 @@ const loadYAML = (filename) => {
  * @param options
  */
 const initByObject = ({ufpMakeDefinition, options}) => {
-
     const joinedOptions = Object.assign({}, ufpMakeDefinition.alias || {}, options)
 
     logger.info('Using joinedOptions file', joinedOptions)
@@ -196,7 +195,6 @@ const executeCommandArea = ({command, options}) => {
         }
 
         if (dependsOnResult.isValid) {
-
             if (command.cwd) {
                 logger.mark('Setting working directory %s', command.cwd)
                 if (fs.existsSync(command.cwd)) {
@@ -236,7 +234,7 @@ const printStats = ({countCommands, countFailCommands, executedAreas}) => {
         .map((key) => {
             if (countFailCommands[key] > 0) {
                 logger.mark('%d of %d failed for: [%s]', countFailCommands[key], countCommands[key], key)
-            } else if (!executedAreas[key] && countCommands[key] == 0) {
+            } else if (!executedAreas[key] && countCommands[key] === 0) {
                 logger.mark('not started: [%s]', key)
             } else {
                 logger.mark('succesful: [%s]', key)
@@ -295,7 +293,7 @@ const incCommandFail = () => {
     }
 }
 const incCommandSuccess = ({command}) => {
-    countSuccessCommands [currentPhase]++
+    countSuccessCommands[currentPhase]++
     const key = currentStack.join('.') + '.' + currentPhase
     if (!isNaN(countSuccessCommands[key])) {
         countSuccessCommands[key]++
@@ -397,10 +395,9 @@ const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
             const hrend = process.hrtime(hrstart)
 
             logger.mark('Finished: %s.%s in %d.%dms', currentStack.join('.'), target, ...hrend)
-
         }
     })
-    //logger.mark('currentstack is ', currentStack)
+    // logger.mark('currentstack is ', currentStack)
     currentStack.pop()
 }
 
@@ -413,7 +410,6 @@ const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
 const processUfpMakeDefinition = ({
     ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required'), options = {}
 }) => {
-
     if (ufpMakeDefinition && ufpMakeDefinition.targets && ufpMakeDefinition.targets.pre) {
         processTarget({
             name: 'pre',
@@ -464,7 +460,6 @@ const processUfpMakeDefinitionInside = ({
     logger.debug('Processing', ufpMakeDefinition)
     //    logger.debug('Options ', _options)
     try {
-
         let theTarget = ufpMakeDefinition.targets[options.TARGET]
         if (theTarget === undefined) {
             theTarget = ufpMakeDefinition.tasks[options.TARGET]
@@ -490,7 +485,6 @@ const processUfpMakeDefinitionInside = ({
         logger.error(e.message)
         // logger.debug(e)
     }
-
 }
 
 /**
