@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [unreleased]
 
+## [0.1.5] - 2017-10-22
+
+- cwd - current working directory for tasks (state machine)
+- pre/post - targets executed automatically before and after target
+- testing various edge cases (endless loops referencing targets)
+- output formatting, more timers, undefined
+
 ## [0.1.4] - 2017-10-20
 
 - fix line endings to make shell execution actually work under linux

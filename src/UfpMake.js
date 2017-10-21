@@ -1,6 +1,7 @@
 const yaml = require('js-yaml')
 const logger = require('../src/Logger')('ufp-make')
 const fs = require('fs')
+const path = require('path')
 const execSync = require('child_process').execSync
 const JsUtils = require('./JsUtils')
 let merge = require('deepmerge')
@@ -11,6 +12,9 @@ let countSuccessCommands = {}
 let countFailCommands = {}
 let countCommands = {}
 let executedAreas = {}
+let cwd = '.'
+
+let currentStack = []
 
 /**
  * we want to provide a set of variables and default option
@@ -22,12 +26,10 @@ let executedAreas = {}
 const defaultOptions = {
     TARGET: 'default',
     FORCE: false,
-    VARIABLES: {
-        UFP_VERSION: '1.0.0',
-        UFP_API_TYPE: 'mock',
-        UFP_THEME: 'default',
-        UFP_NODE_ENV: 'development'
-    }
+    UFP_VERSION: '1.0.0',
+    UFP_API_TYPE: 'mock',
+    UFP_THEME: 'default',
+    UFP_NODE_ENV: 'development'
 }
 
 /**
@@ -53,13 +55,16 @@ const loadYAML = (filename) => {
  * @param options
  */
 const initByObject = ({ufpMakeDefinition, options}) => {
+    const joinedOptions = Object.assign({}, ufpMakeDefinition.alias || {}, options)
+
+    logger.info('Using joinedOptions file', joinedOptions)
     init({
         ufpMakeDefinition,
-        options
+        options: joinedOptions
     })
     processUfpMakeDefinition({
         ufpMakeDefinition,
-        options
+        options: joinedOptions
     })
 }
 
@@ -73,11 +78,15 @@ const initByConfigFile = ({fileName, options}) => {
     logger.info('Using config file', fileName)
     let ufpMakeDefinition
     if (fs.existsSync(fileName)) {
-        ufpMakeDefinition = loadYAML(fileName)
-        initByObject({
-            ufpMakeDefinition,
-            options
-        })
+        try {
+            ufpMakeDefinition = loadYAML(fileName)
+            initByObject({
+                ufpMakeDefinition,
+                options
+            })
+        } catch (e) {
+            //    logger.error(e.message)
+        }
     } else {
         throw new Error('YML Config not found')
     }
@@ -93,9 +102,9 @@ const init = ({ufpMakeDefinition}) => {
     Object.keys(ufpMakeDefinition.tasks)
         .map((task) => {
             logger.debug('Registering task', task)
-            countCommands[task] = 0
-            countFailCommands[task] = 0
-            countSuccessCommands[task] = 0
+            // countCommands[task] = 0
+            // countFailCommands[task] = 0
+            // countSuccessCommands[task] = 0
         })
 
     Object.keys(ufpMakeDefinition.targets)
@@ -124,10 +133,17 @@ const replaceVars = ({string, values}) => {
  * @param options
  */
 const handleError = ({err, options}) => {
-    countFailCommands[currentPhase]++
-    //    logger.error('Execution failedxxx', err)
-    logger.debug('stderr:\n', err.stderr.toString())
-    logger.error('stdout:\n', err.stdout.toString())
+    incCommandFail()
+    logger.error('Execution failed', err.message)
+    logger.debug('Execution failed', err)
+    if (err && err.stderr && err.stderr.toString) {
+        logger.debug('stderr:\n', err.stderr.toString())
+    }
+
+    if (err && err.stdout && err.stdout.toString) {
+        logger.error('stdout:\n', err.stdout.toString())
+    }
+
     // logger.error('Execution failed', err)
     if (!options.FORCE) {
         throw new Error('exiting, use --FORCE to continue on fail')
@@ -163,9 +179,13 @@ const executeCommandArea = ({command, options}) => {
             options
         }))
     } else {
-        logger.mark('Starting:', command.name)
+        if (command && command.name) {
+            logger.info('Starting:', command.name)
+        }
         const hrstart = process.hrtime()
-        logger.info(command.description)
+        if (command && command.description) {
+            logger.info(command.description)
+        }
         let dependsOnResult = {
             reasons: [],
             isValid: true
@@ -175,6 +195,15 @@ const executeCommandArea = ({command, options}) => {
         }
 
         if (dependsOnResult.isValid) {
+            if (command.cwd) {
+                logger.mark('Setting working directory %s', command.cwd)
+                if (fs.existsSync(command.cwd)) {
+                    cwd = command.cwd
+                } else {
+                    throw new Error('Path not found ' + command.cwd)
+                }
+            }
+
             if (command.commands && command.commands.map) {
                 command.commands.map((command) => executeCommandArea({
                     command,
@@ -186,7 +215,10 @@ const executeCommandArea = ({command, options}) => {
         }
 
         const hrend = process.hrtime(hrstart)
-        logger.mark('Finished: %s in %d.%dms', command.name, ...hrend)
+
+        if (command && command.name) {
+            logger.info('Finished: %s in %d.%dms', command.name, ...hrend)
+        }
     }
 }
 /**
@@ -202,7 +234,7 @@ const printStats = ({countCommands, countFailCommands, executedAreas}) => {
         .map((key) => {
             if (countFailCommands[key] > 0) {
                 logger.mark('%d of %d failed for: [%s]', countFailCommands[key], countCommands[key], key)
-            } else if (!executedAreas[key]) {
+            } else if (!executedAreas[key] && countCommands[key] === 0) {
                 logger.mark('not started: [%s]', key)
             } else {
                 logger.mark('succesful: [%s]', key)
@@ -240,6 +272,36 @@ const isPhaseValid = (phases) => {
         isValid: isPhaseValid
     }
 }
+
+const incCommandExecution = ({command}) => {
+    countCommands[currentPhase]++
+    const key = currentStack.join('.') + '.' + currentPhase
+    if (!isNaN(countCommands[key])) {
+        countCommands[key]++
+    } else {
+        countCommands[key] = 1
+    }
+}
+
+const incCommandFail = () => {
+    countFailCommands[currentPhase]++
+    const key = currentStack.join('.') + '.' + currentPhase
+    if (!isNaN(countFailCommands[key])) {
+        countFailCommands[key]++
+    } else {
+        countFailCommands[key] = 1
+    }
+}
+const incCommandSuccess = ({command}) => {
+    countSuccessCommands[currentPhase]++
+    const key = currentStack.join('.') + '.' + currentPhase
+    if (!isNaN(countSuccessCommands[key])) {
+        countSuccessCommands[key]++
+    } else {
+        countSuccessCommands[key] = 1
+    }
+}
+
 /**
  * the execution of a single cli command string using execSync from the node
  * library options flag if any exception shall lead to termination of program
@@ -248,25 +310,35 @@ const isPhaseValid = (phases) => {
  * @param options
  */
 const executeCommand = ({command, options}) => {
-    countCommands[currentPhase]++
+    incCommandExecution({command})
     const commandNew = replaceVars({
         string: command,
-        values: options.VARIABLES
+        values: options
     })
     try {
+        const currentCwd = path.join(process.cwd(), cwd)
         logger.info('EXEC [', commandNew, ']')
+        logger.info('IN PATH [', currentCwd, ']')
+
+        if (!fs.existsSync(currentCwd)) {
+            throw new Error('Path not found: ' + currentCwd)
+        }
+
         const output = execSync(commandNew, {
-            cwd: process.cwd(),
+            cwd: cwd,
+            env: Object.assign({}, process.env, options),
             stdio: ['pipe', 'pipe', 'pipe']
         })
 
         logger.info('END [ ', commandNew, '] ')
 
         logger.debug('stdout was:')
-        logger.debug(output.toString())
-        countSuccessCommands[currentPhase]++
+        if (output && output.toString) {
+            logger.debug(output.toString())
+        }
+        incCommandSuccess({command})
     } catch (err) {
-        logger.error('FAIL [', commandNew, ']')
+        logger.error('FAIL [', commandNew, ']', err.message)
         handleError({
             err,
             options
@@ -282,9 +354,15 @@ const executeCommand = ({command, options}) => {
  * @param theTarget list of strings for targets/tasks
  * @param options
  */
-const processTarget = ({ufpMakeDefinition, theTarget, options}) => {
+const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
     logger.debug('Target Definition is', theTarget)
-
+    // logger.mark('currentstack is ', currentStack)
+    currentStack.find((elem) => {
+        if (elem === name) {
+            throw new Error('No self-calling of targets allowed: ' + currentStack.join('->') + '->' + name)
+        }
+    })
+    currentStack.push(name)
     theTarget.map((target) => {
         logger.info('Proccessing target', target)
         // check if target is another target or a task
@@ -292,22 +370,77 @@ const processTarget = ({ufpMakeDefinition, theTarget, options}) => {
             logger.debug('Target is referencing another target', target)
             logger.debug('Target is referencing another target', ufpMakeDefinition)
             logger.debug('Target is referencing another target', ufpMakeDefinition.targets[target])
+            // reset cwd()
+            // cwd = '.'
+            logger.mark('Start %s.%s', currentStack.join('.'), target)
+            const hrstart = process.hrtime()
             processTarget({
+                name: target,
                 ufpMakeDefinition,
                 theTarget: ufpMakeDefinition.targets[target],
                 options
             })
+            const hrend = process.hrtime(hrstart)
+            logger.mark('Finished: %s.%s in %d.%dms', currentStack.join('.'), target, ...hrend)
         } else if (ufpMakeDefinition.tasks[target]) {
             logger.debug('Proccessing task target', target)
+            logger.mark('Start %s.%s', currentStack.join('.'), target)
             currentPhase = target
             executedAreas[target] = true
+            const hrstart = process.hrtime()
             executeCommandArea({
                 command: ufpMakeDefinition.tasks[target],
                 options
             })
+            const hrend = process.hrtime(hrstart)
+
+            logger.mark('Finished: %s.%s in %d.%dms', currentStack.join('.'), target, ...hrend)
         }
     })
+    // logger.mark('currentstack is ', currentStack)
+    currentStack.pop()
 }
+
+/**
+ *  here we now wrap for execution of pre and post commands
+ *
+ * @param ufpMakeDefinition
+ * @param options
+ */
+const processUfpMakeDefinition = ({
+    ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required'), options = {}
+}) => {
+    if (ufpMakeDefinition && ufpMakeDefinition.targets && ufpMakeDefinition.targets.pre) {
+        processTarget({
+            name: 'pre',
+            ufpMakeDefinition,
+            theTarget: ufpMakeDefinition.targets.pre,
+            options
+        })
+    }
+
+    processUfpMakeDefinitionInside({
+        ufpMakeDefinition,
+        options
+    })
+
+    if (ufpMakeDefinition && ufpMakeDefinition.targets && ufpMakeDefinition.targets.post) {
+        processTarget({
+            name: 'post',
+            ufpMakeDefinition,
+            theTarget: ufpMakeDefinition.targets.post,
+            options
+        })
+    }
+
+    printStats({
+        countFailCommands,
+        countCommands,
+        executedAreas
+    })
+    logger.mark('finished')
+}
+
 /**
  * this method is meant to process the full blow makeDefinition
  * which is parsing the object consisting of targets/task objects
@@ -320,7 +453,10 @@ const processTarget = ({ufpMakeDefinition, theTarget, options}) => {
  * @param ufpMakeDefinition
  * @param options
  */
-const processUfpMakeDefinition = ({ufpMakeDefinition, options}) => {
+const processUfpMakeDefinitionInside = ({
+    ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required'), options = {}
+}) => {
+    logger.debug('Processing', options.TARGET)
     logger.debug('Processing', ufpMakeDefinition)
     //    logger.debug('Options ', _options)
     try {
@@ -339,6 +475,7 @@ const processUfpMakeDefinition = ({ufpMakeDefinition, options}) => {
         } else {
             currentPhase = options.TARGET
             processTarget({
+                name: options.TARGET,
                 ufpMakeDefinition,
                 theTarget,
                 options
@@ -346,15 +483,8 @@ const processUfpMakeDefinition = ({ufpMakeDefinition, options}) => {
         }
     } catch (e) {
         logger.error(e.message)
-        logger.debug(e)
+        // logger.debug(e)
     }
-
-    printStats({
-        countFailCommands,
-        countCommands,
-        executedAreas
-    })
-    logger.mark('finished')
 }
 
 /**

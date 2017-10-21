@@ -1,0 +1,59 @@
+# example for post/pre targets, and the use of yml syntax
+# for defining a node which is reused elsewhere in the file
+# - this is standard yml syntax!
+#
+definitions:
+  doit: &doitAlias
+    - clean
+    - install
+    - make
+
+alias:
+  willi: buxi
+targets:
+
+  default:
+    - example0
+  example0:
+    - doit
+  pre:
+    - preTask
+  post:
+    - postTask
+
+  doit: *doitAlias
+
+tasks:
+  preTask:
+    - name: PreTask
+      description: Executed before all
+      commands:
+        - echo "${willi}"
+        - echo "${UFP_VERSION}"
+        - echo "${UFP_API}"
+        - echo "${UFP_THEME}"
+        - echo "${UFP_NODE_ENV}"
+  postTask:
+      - name: PostTask
+        description: Executed after all
+        commands:
+          - echo "${willi}"
+
+  clean:
+    - name: Clean
+      description: cleaning up project folder
+      commands:
+        - echo "Test Clean"
+  install:
+    - name: Install Dependencies
+      description: ... downloading dependencies from npmjs.org
+      commands:
+      - echo "Test Install"
+  make:
+    - name: Making
+      description: executes the make command of project
+      commands:
+      - echo "Test Make"
+
+
+
