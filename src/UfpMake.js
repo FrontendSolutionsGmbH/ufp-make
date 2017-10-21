@@ -181,10 +181,12 @@ const executeCommandArea = ({command, options}) => {
         }))
     } else {
         if (command && command.name) {
-            logger.mark('Starting:', command.name)
+            logger.info('Starting:', command.name)
         }
         const hrstart = process.hrtime()
-        logger.info(command.description)
+        if (command && command.description) {
+            logger.info(command.description)
+        }
         let dependsOnResult = {
             reasons: [],
             isValid: true
@@ -217,7 +219,7 @@ const executeCommandArea = ({command, options}) => {
         const hrend = process.hrtime(hrstart)
 
         if (command && command.name) {
-            logger.mark('Finished: %s in %d.%dms', command.name, ...hrend)
+            logger.info('Finished: %s in %d.%dms', command.name, ...hrend)
         }
     }
 }
@@ -372,20 +374,30 @@ const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
             logger.debug('Target is referencing another target', ufpMakeDefinition.targets[target])
             // reset cwd()
             // cwd = '.'
+            logger.mark('Start %s.%s', currentStack.join('.'), target)
+            const hrstart = process.hrtime()
             processTarget({
                 name: target,
                 ufpMakeDefinition,
                 theTarget: ufpMakeDefinition.targets[target],
                 options
             })
+            const hrend = process.hrtime(hrstart)
+            logger.mark('Finished: %s.%s in %d.%dms', currentStack.join('.'), target, ...hrend)
         } else if (ufpMakeDefinition.tasks[target]) {
             logger.debug('Proccessing task target', target)
+            logger.mark('Start %s.%s', currentStack.join('.'), target)
             currentPhase = target
             executedAreas[target] = true
+            const hrstart = process.hrtime()
             executeCommandArea({
                 command: ufpMakeDefinition.tasks[target],
                 options
             })
+            const hrend = process.hrtime(hrstart)
+
+            logger.mark('Finished: %s.%s in %d.%dms', currentStack.join('.'), target, ...hrend)
+
         }
     })
     //logger.mark('currentstack is ', currentStack)
