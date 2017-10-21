@@ -357,6 +357,11 @@ const executeCommand = ({command, options}) => {
 const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
     logger.debug('Target Definition is', theTarget)
     // logger.mark('currentstack is ', currentStack)
+    currentStack.find((elem) => {
+        if (elem === name) {
+            throw new Error('No self-calling of targets allowed: ' + currentStack.join('->') + '->' + name)
+        }
+    })
     currentStack.push(name)
     theTarget.map((target) => {
         logger.info('Proccessing target', target)
