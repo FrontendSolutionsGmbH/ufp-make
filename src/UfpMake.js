@@ -317,8 +317,6 @@ const executeCommand = ({command, options}) => {
         const currentCwd = path.join(process.cwd(), cwd)
         logger.info('EXEC [', commandNew, ']')
         logger.info('IN PATH [', currentCwd, ']')
-        console.log('-----------', process.env.PATH);
-        console.log('-----------', process.env.PATH);
 
         if (!fs.existsSync(currentCwd)) {
             throw new Error('Path not found: ' + currentCwd)
