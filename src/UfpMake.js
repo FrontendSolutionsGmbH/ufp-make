@@ -26,12 +26,10 @@ let currentStack = []
 const defaultOptions = {
     TARGET: 'default',
     FORCE: false,
-    VARIABLES: {
-        UFP_VERSION: '1.0.0',
-        UFP_API_TYPE: 'mock',
-        UFP_THEME: 'default',
-        UFP_NODE_ENV: 'development'
-    }
+    UFP_VERSION: '1.0.0',
+    UFP_API_TYPE: 'mock',
+    UFP_THEME: 'default',
+    UFP_NODE_ENV: 'development'
 }
 
 /**
@@ -57,13 +55,17 @@ const loadYAML = (filename) => {
  * @param options
  */
 const initByObject = ({ufpMakeDefinition, options}) => {
+
+    const joinedOptions = Object.assign({}, ufpMakeDefinition.alias || {}, options)
+
+    logger.info('Using joinedOptions file', joinedOptions)
     init({
         ufpMakeDefinition,
-        options
+        options: joinedOptions
     })
     processUfpMakeDefinition({
         ufpMakeDefinition,
-        options
+        options: joinedOptions
     })
 }
 
@@ -101,9 +103,9 @@ const init = ({ufpMakeDefinition}) => {
     Object.keys(ufpMakeDefinition.tasks)
         .map((task) => {
             logger.debug('Registering task', task)
-            countCommands[task] = 0
-            countFailCommands[task] = 0
-            countSuccessCommands[task] = 0
+            // countCommands[task] = 0
+            // countFailCommands[task] = 0
+            // countSuccessCommands[task] = 0
         })
 
     Object.keys(ufpMakeDefinition.targets)
@@ -133,8 +135,8 @@ const replaceVars = ({string, values}) => {
  */
 const handleError = ({err, options}) => {
     incCommandFail()
-    logger.error('Execution failed', err)
     logger.error('Execution failed', err.message)
+    logger.debug('Execution failed', err)
     if (err && err.stderr && err.stderr.toString) {
         logger.debug('stderr:\n', err.stderr.toString())
     }
@@ -311,7 +313,7 @@ const executeCommand = ({command, options}) => {
     incCommandExecution({command})
     const commandNew = replaceVars({
         string: command,
-        values: options.VARIABLES
+        values: options
     })
     try {
         const currentCwd = path.join(process.cwd(), cwd)
@@ -324,7 +326,7 @@ const executeCommand = ({command, options}) => {
 
         const output = execSync(commandNew, {
             cwd: cwd,
-            env: Object.assign({}, process.env, options.VARIABLES),
+            env: Object.assign({}, process.env, options),
             stdio: ['pipe', 'pipe', 'pipe']
         })
 
@@ -389,6 +391,48 @@ const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
     //logger.mark('currentstack is ', currentStack)
     currentStack.pop()
 }
+
+/**
+ *  here we now wrap for execution of pre and post commands
+ *
+ * @param ufpMakeDefinition
+ * @param options
+ */
+const processUfpMakeDefinition = ({
+    ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required'), options = {}
+}) => {
+
+    if (ufpMakeDefinition && ufpMakeDefinition.targets && ufpMakeDefinition.targets.pre) {
+        processTarget({
+            name: 'pre',
+            ufpMakeDefinition,
+            theTarget: ufpMakeDefinition.targets.pre,
+            options
+        })
+    }
+
+    processUfpMakeDefinitionInside({
+        ufpMakeDefinition,
+        options
+    })
+
+    if (ufpMakeDefinition && ufpMakeDefinition.targets && ufpMakeDefinition.targets.post) {
+        processTarget({
+            name: 'post',
+            ufpMakeDefinition,
+            theTarget: ufpMakeDefinition.targets.post,
+            options
+        })
+    }
+
+    printStats({
+        countFailCommands,
+        countCommands,
+        executedAreas
+    })
+    logger.mark('finished')
+}
+
 /**
  * this method is meant to process the full blow makeDefinition
  * which is parsing the object consisting of targets/task objects
@@ -401,11 +445,14 @@ const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
  * @param ufpMakeDefinition
  * @param options
  */
-const processUfpMakeDefinition = ({ufpMakeDefinition, options}) => {
+const processUfpMakeDefinitionInside = ({
+    ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required'), options = {}
+}) => {
     logger.debug('Processing', options.TARGET)
     logger.debug('Processing', ufpMakeDefinition)
     //    logger.debug('Options ', _options)
     try {
+
         let theTarget = ufpMakeDefinition.targets[options.TARGET]
         if (theTarget === undefined) {
             theTarget = ufpMakeDefinition.tasks[options.TARGET]
@@ -429,15 +476,9 @@ const processUfpMakeDefinition = ({ufpMakeDefinition, options}) => {
         }
     } catch (e) {
         logger.error(e.message)
-        logger.debug(e)
+        // logger.debug(e)
     }
 
-    printStats({
-        countFailCommands,
-        countCommands,
-        executedAreas
-    })
-    logger.mark('finished')
 }
 
 /**
