@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [unreleased]
 
+## [0.1.6] - 2017-10-23
+
+- version display from package.json for --version cli option
+
 ## [0.1.5] - 2017-10-22
 
 - cwd - current working directory for tasks (state machine)
@@ -36,6 +40,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 [Unreleased]: https://bitbucket.org/frontendsolutions/ufp-core/branches/compare/0.1.4...develop
+[0.1.4]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.5...0.1.6
+[0.1.4]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.4...0.1.5
 [0.1.4]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.3...0.1.4
 [0.1.3]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.2...0.1.3
 [0.1.2]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.1...0.1.2
