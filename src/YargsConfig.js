@@ -2,9 +2,10 @@ const yargs = require('yargs')
 const YamlLoader = require('./YamlLoader')
 const Constants = require('./Constants')
 const path = require('path')
+const packageJson = require('../package.json')
 
 const fs = require('fs')
-yargs.version('1.0.0')
+yargs.version(packageJson.version)
 
 /**
  * defines the application wide command line interface
