@@ -20,9 +20,13 @@ install global using
 
 ## ufp-make.yml
 
+    alias:
+        key: value
     targets:
+        pre: [array of targets or tasks]
+        post: [array of targets or tasks]
         [targetName]: [Array of targets or tasks]
-    tasks:
+    tasks:        
         [taskName]: [Array of Commands]
 
 the command structure inside the [taskName] definition is as follows:
@@ -34,6 +38,7 @@ a command can either be:
 or a collection of commands
 
     command:
+        cwd: [current working directory state machine, will not be reseted after command]
         name: theCommandName
         description: theCommandDescription outputed on loglevel INFO
         commands: [array of commands]
