@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - fix counts for main tasks
 - promisify api entry points
 - exit code 1 set if anything failed
+- NODE_ENV set from UFP_NODE_ENV on start
 
 ## [0.1.6] - 2017-10-23
 
