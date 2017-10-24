@@ -42,7 +42,7 @@ module.exports = {
             describe: `node environment value, 
         provided as NODE_ENV environment variable
 `,
-            default: NODE_ENVS[0],
+            default: process.env[UFP_NODE_ENV] || NODE_ENVS [0],
             choices: NODE_ENVS,
             alias: 'n'
         },
