@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [unreleased]
 
-## [0.1.7] - 2017-10-24
+## [0.2.0] - 2017-10-24
 
 - fix seconds/ms output
 - fix counts for main tasks
@@ -46,8 +46,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Initial Release
 
 
-[Unreleased]: https://bitbucket.org/frontendsolutions/ufp-core/branches/compare/0.1.7...develop
-[0.1.7]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.6...0.1.7
+[Unreleased]: https://bitbucket.org/frontendsolutions/ufp-core/branches/compare/0.2.0...develop
+[0.2.0]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.6...0.2.0
 [0.1.6]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.5...0.1.6
 [0.1.5]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.4...0.1.5
 [0.1.4]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.3...0.1.4
