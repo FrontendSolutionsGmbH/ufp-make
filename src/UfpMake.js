@@ -120,6 +120,8 @@ const init = ({ufpMakeDefinition}) => {
  */
 const replaceVars = ({string, values}) => {
     let result = string
+    // fixme: hacky node env pass through
+    values['NODE_ENV'] = values['UFP_NODE_ENV']
     Object.keys(values)
           .map((key) => {
               result = result.replace('${' + key + '}', values[key])
