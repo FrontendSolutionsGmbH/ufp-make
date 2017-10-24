@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [unreleased]
 
+## [0.2.3] - 2017-10-24
+
+- correct durationtime output in seconds now 
+
 ## [0.2.2] - 2017-10-24
 
 - just updating
@@ -55,7 +59,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Initial Release
 
 
-[Unreleased]: https://bitbucket.org/frontendsolutions/ufp-core/branches/compare/0.2.1...develop
+[Unreleased]: https://bitbucket.org/frontendsolutions/ufp-core/branches/compare/0.2.3...develop
+[0.2.3]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.2.2...0.2.3
+[0.2.2]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.6...0.2.0
 [0.1.6]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.5...0.1.6
