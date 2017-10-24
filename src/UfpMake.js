@@ -217,7 +217,7 @@ const executeCommandArea = ({command, options}) => {
         const hrend = process.hrtime(hrstart)
 
         if (command && command.name) {
-            logger.info('Finished: %s in %d.%dms', command.name, ...hrend)
+            logger.info('Finished: %s in %d.%ds', command.name, ...hrend)
         }
     }
 }
@@ -381,7 +381,7 @@ const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
                 options
             })
             const hrend = process.hrtime(hrstart)
-            logger.mark('Finished: %s.%s in %d.%dms', currentStack.join('.'), target, ...hrend)
+            logger.mark('Finished: %s.%s in %d.%ds', currentStack.join('.'), target, ...hrend)
         } else if (ufpMakeDefinition.tasks[target]) {
             logger.debug('Proccessing task target', target)
             logger.mark('Start %s.%s', currentStack.join('.'), target)
@@ -394,7 +394,7 @@ const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
             })
             const hrend = process.hrtime(hrstart)
 
-            logger.mark('Finished: %s.%s in %d.%dms', currentStack.join('.'), target, ...hrend)
+            logger.mark('Finished: %s.%s in %d.%ds', currentStack.join('.'), target, ...hrend)
         }
     })
     // logger.mark('currentstack is ', currentStack)
