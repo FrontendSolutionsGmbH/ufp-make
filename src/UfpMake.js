@@ -102,17 +102,17 @@ const init = ({ufpMakeDefinition}) => {
     logger.info(ufpMakeDefinition)
     // init stats
     Object.keys(ufpMakeDefinition.tasks)
-          .map((task) => {
-              logger.debug('Registering task', task)
-              // countCommands[task] = 0
-              // countFailCommands[task] = 0
-              // countSuccessCommands[task] = 0
-          })
+        .map((task) => {
+            logger.debug('Registering task', task)
+            // countCommands[task] = 0
+            // countFailCommands[task] = 0
+            // countSuccessCommands[task] = 0
+        })
 
     Object.keys(ufpMakeDefinition.targets)
-          .map((target) => {
-              logger.debug('Registering target', target)
-          })
+        .map((target) => {
+            logger.debug('Registering target', target)
+        })
 }
 /**
  * template utility string method replacing template string variable by hand
@@ -125,9 +125,9 @@ const replaceVars = ({string, values}) => {
     // fixme: hacky node env pass through
     values['NODE_ENV'] = values['UFP_NODE_ENV']
     Object.keys(values)
-          .map((key) => {
-              result = result.replace('${' + key + '}', values[key])
-          })
+        .map((key) => {
+            result = result.replace('${' + key + '}', values[key])
+        })
     return result
 }
 /**
@@ -186,7 +186,7 @@ const executeCommandArea = ({command, options}) => {
         if (command && command.name) {
             logger.info('Starting:', command.name)
         }
-        const hrstart = process.hrtime()
+        const hrMeasure = JsUtils.hrMeasure()
         if (command && command.description) {
             logger.info(command.description)
         }
@@ -218,10 +218,8 @@ const executeCommandArea = ({command, options}) => {
             logger.mark('Skipping %s because failed/not started', command.name, dependsOnResult.reasons)
         }
 
-        const hrend = process.hrtime(hrstart)
-
         if (command && command.name) {
-            logger.info('Finished: %s in %d.%ds', command.name, ...hrend)
+            logger.info('Finished: %s in %ds', command.name, hrMeasure())
         }
     }
 }
@@ -235,15 +233,15 @@ const executeCommandArea = ({command, options}) => {
  */
 const printStats = ({countCommands, countFailCommands, executedAreas}) => {
     Object.keys(countCommands)
-          .map((key) => {
-              if (countFailCommands[key] > 0) {
-                  logger.mark('%d of %d failed for: [%s]', countFailCommands[key], countCommands[key], key)
-              } else if (!executedAreas[key] && countCommands[key] === 0) {
-                  logger.mark('not started: [%s]', key)
-              } else {
-                  logger.mark('succesful: [%s]', key)
-              }
-          })
+        .map((key) => {
+            if (countFailCommands[key] > 0) {
+                logger.mark('%d of %d failed for: [%s]', countFailCommands[key], countCommands[key], key)
+            } else if (!executedAreas[key] && countCommands[key] === 0) {
+                logger.mark('not started: [%s]', key)
+            } else {
+                logger.mark('succesful: [%s]', key)
+            }
+        })
 }
 /**
  * a (for now) basic determination if a task has been (succsesfully) executed either it
@@ -391,28 +389,27 @@ const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
             // reset cwd()
             // cwd = '.'
             logger.mark('Start %s.%s', currentStack.join('.'), target)
-            const hrstart = process.hrtime()
+
+            const hrMeasure = JsUtils.hrMeasure()
             processTarget({
                 name: target,
                 ufpMakeDefinition,
                 theTarget: ufpMakeDefinition.targets[target],
                 options
             })
-            const hrend = process.hrtime(hrstart)
-            logger.mark('Finished: %s.%s in %d.%ds', currentStack.join('.'), target, ...hrend)
+            logger.mark('Finished: %s.%s in %ds', currentStack.join('.'), target, hrMeasure())
         } else if (ufpMakeDefinition.tasks[target]) {
             logger.debug('Proccessing task target', target)
             logger.mark('Start %s.%s', currentStack.join('.'), target)
             currentPhase = target
             executedAreas[target] = true
-            const hrstart = process.hrtime()
+            const hrMeasure = JsUtils.hrMeasure()
             executeCommandArea({
                 command: ufpMakeDefinition.tasks[target],
                 options
             })
-            const hrend = process.hrtime(hrstart)
 
-            logger.mark('Finished: %s.%s in %d.%ds', currentStack.join('.'), target, ...hrend)
+            logger.mark('Finished: %s.%s in %ds', currentStack.join('.'), target, hrMeasure())
         }
     })
     // logger.mark('currentstack is ', currentStack)
