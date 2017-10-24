@@ -100,17 +100,17 @@ const init = ({ufpMakeDefinition}) => {
     logger.info(ufpMakeDefinition)
     // init stats
     Object.keys(ufpMakeDefinition.tasks)
-        .map((task) => {
-            logger.debug('Registering task', task)
-            // countCommands[task] = 0
-            // countFailCommands[task] = 0
-            // countSuccessCommands[task] = 0
-        })
+          .map((task) => {
+              logger.debug('Registering task', task)
+              // countCommands[task] = 0
+              // countFailCommands[task] = 0
+              // countSuccessCommands[task] = 0
+          })
 
     Object.keys(ufpMakeDefinition.targets)
-        .map((target) => {
-            logger.debug('Registering target', target)
-        })
+          .map((target) => {
+              logger.debug('Registering target', target)
+          })
 }
 /**
  * template utility string method replacing template string variable by hand
@@ -121,9 +121,9 @@ const init = ({ufpMakeDefinition}) => {
 const replaceVars = ({string, values}) => {
     let result = string
     Object.keys(values)
-        .map((key) => {
-            result = result.replace('${' + key + '}', values[key])
-        })
+          .map((key) => {
+              result = result.replace('${' + key + '}', values[key])
+          })
     return result
 }
 /**
@@ -231,15 +231,15 @@ const executeCommandArea = ({command, options}) => {
  */
 const printStats = ({countCommands, countFailCommands, executedAreas}) => {
     Object.keys(countCommands)
-        .map((key) => {
-            if (countFailCommands[key] > 0) {
-                logger.mark('%d of %d failed for: [%s]', countFailCommands[key], countCommands[key], key)
-            } else if (!executedAreas[key] && countCommands[key] === 0) {
-                logger.mark('not started: [%s]', key)
-            } else {
-                logger.mark('succesful: [%s]', key)
-            }
-        })
+          .map((key) => {
+              if (countFailCommands[key] > 0) {
+                  logger.mark('%d of %d failed for: [%s]', countFailCommands[key], countCommands[key], key)
+              } else if (!executedAreas[key] && countCommands[key] === 0) {
+                  logger.mark('not started: [%s]', key)
+              } else {
+                  logger.mark('succesful: [%s]', key)
+              }
+          })
 }
 /**
  * a (for now) basic determination if a task has been (succsesfully) executed either it
@@ -274,7 +274,12 @@ const isPhaseValid = (phases) => {
 }
 
 const incCommandExecution = ({command}) => {
-    countCommands[currentPhase]++
+    if (!isNaN(countCommands[currentPhase])) {
+        countCommands[currentPhase]++
+    } else {
+        countCommands[currentPhase] = 1
+
+    }
     const key = currentStack.join('.') + '.' + currentPhase
     if (!isNaN(countCommands[key])) {
         countCommands[key]++
@@ -284,7 +289,14 @@ const incCommandExecution = ({command}) => {
 }
 
 const incCommandFail = () => {
-    countFailCommands[currentPhase]++
+
+    if (!isNaN(countFailCommands[currentPhase])) {
+        countFailCommands[currentPhase]++
+    } else {
+        countFailCommands[currentPhase] = 1
+
+    }
+
     const key = currentStack.join('.') + '.' + currentPhase
     if (!isNaN(countFailCommands[key])) {
         countFailCommands[key]++
@@ -293,7 +305,12 @@ const incCommandFail = () => {
     }
 }
 const incCommandSuccess = ({command}) => {
-    countSuccessCommands[currentPhase]++
+    if (!isNaN(countSuccessCommands[currentPhase])) {
+        countSuccessCommands[currentPhase]++
+    } else {
+        countSuccessCommands[currentPhase] = 1
+
+    }
     const key = currentStack.join('.') + '.' + currentPhase
     if (!isNaN(countSuccessCommands[key])) {
         countSuccessCommands[key]++
@@ -505,26 +522,43 @@ const processUfpMakeDefinitionInside = ({
  */
 module.exports = {
 
-    makeFile: ({
+    makeFile: async({
+
         fileName = JsUtils.throwParam('Filename required for makeFile(), expecting a parameter object'),
         options = defaultOptions
     } = JsUtils.throwParam('parameters object required for makeFile()')) => {
-        logger.mark('using', fileName)
-        const optionsFinal = merge(defaultOptions, options)
+        return new Promise((resolve, reject) => {
 
-        if (optionsFinal) {
-            logger.debug('Options are:', optionsFinal)
-        }
+                logger.mark('using', fileName)
+                const optionsFinal = merge(defaultOptions, options)
 
-        initByConfigFile({
-            fileName,
-            options: optionsFinal
-        })
+                if (optionsFinal) {
+                    logger.debug('Options are:', optionsFinal)
+                }
+
+                initByConfigFile({
+                    fileName,
+                    options: optionsFinal
+                })
+
+                resolve({
+                    sucess: Object.keys(countFailCommands).length === 0,
+                    result: {
+                        countCommands,
+                        countFailCommands,
+                        countSuccessCommands
+                    }
+                })
+            }
+        )
+
     },
-    make: ({ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required for make(), expecting a parameter object'), options} = {}) => {
-        initByObject({
-            ufpMakeDefinition,
-            options
+    make: async({ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required for make(), expecting a parameter object'), options} = {}) => {
+        return new Promise((resolve, reject) => {
+            initByObject({
+                ufpMakeDefinition,
+                options
+            })
         })
     }
 

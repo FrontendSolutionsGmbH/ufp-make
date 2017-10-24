@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [unreleased]
 
+## [0.1.7] - 2017-10-23
+
+- fix seconds/ms output
+- fix counts for main tasks
+- promisify api entry points
+- exit code 1 set if anything failed
+
 ## [0.1.6] - 2017-10-23
 
 - version display from package.json for --version cli option
