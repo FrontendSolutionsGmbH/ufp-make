@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [unreleased]
 
+## [0.2.0] - 2017-10-24
+
+- fix seconds/ms output
+- fix counts for main tasks
+- promisify api entry points
+- exit code 1 set if anything failed
+
 ## [0.1.6] - 2017-10-23
 
 - version display from package.json for --version cli option
@@ -39,9 +46,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Initial Release
 
 
-[Unreleased]: https://bitbucket.org/frontendsolutions/ufp-core/branches/compare/0.1.4...develop
-[0.1.4]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.5...0.1.6
-[0.1.4]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.4...0.1.5
+[Unreleased]: https://bitbucket.org/frontendsolutions/ufp-core/branches/compare/0.2.0...develop
+[0.2.0]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.6...0.2.0
+[0.1.6]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.5...0.1.6
+[0.1.5]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.4...0.1.5
 [0.1.4]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.3...0.1.4
 [0.1.3]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.2...0.1.3
 [0.1.2]: https://github.com/FrontendSolutionsGmbH/ufp-make/compare/0.1.1...0.1.2

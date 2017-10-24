@@ -18,9 +18,18 @@ if (fs.existsSync(expectedPath)) {
     config = fallbackPath
 }
 
-UfpMake.makeFile({
+UfpMake.makeFilePromise({
     fileName: config,
     options: {
         ...yargsConfig.argv
     }
 })
+       .then((data) => {
+           // console.log('thenned', data)
+           if (data.sucess) {
+               process.exitCode = 0
+           } else {
+               process.exitCode = 1
+           }
+           return data
+       })
