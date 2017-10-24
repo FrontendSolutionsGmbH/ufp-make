@@ -14,7 +14,7 @@ module.exports = {
         const hrstart = process.hrtime()
         return () => {
             const hrend = process.hrtime(hrstart)
-            // calculate seconds/milliseconds and round to to decimals
+            // convert second/nanosecondresult to seconds and round to two decimals
             return hrend[0] + (hrend[1] / 1000000000).toFixed(2)
         }
     }
