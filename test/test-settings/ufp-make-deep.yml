@@ -42,7 +42,7 @@ tasks:
       description: cleaning up project folder
       commands:
         - echo "Test Clean"
-#        - exit 1
+        - exit 1
   install:
     - name: Install Dependencies
       description: ... downloading dependencies from npmjs.org
