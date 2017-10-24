@@ -7,7 +7,6 @@ const yargsConfig = require('./YargsConfig')
 const JsUtils = require('./JsUtils')
 let merge = require('deepmerge')
 
-
 let currentPhase = 'default'
 
 let countSuccessCommands = {}
@@ -31,7 +30,7 @@ const defaultOptions = {
     UFP_VERSION: yargsConfig.argv.UFP_VERSION,
     UFP_API_TYPE: yargsConfig.argv.UFP_API_TYPE,
     UFP_THEME: yargsConfig.argv.UFP_THEME,
-    UFP_NODE_ENV: yargsConfig.argv.UFP_NODE_ENV,
+    UFP_NODE_ENV: yargsConfig.argv.UFP_NODE_ENV
 }
 
 /**
