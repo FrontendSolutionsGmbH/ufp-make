@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [unreleased]
 
+## [0.2.2] - 2017-10-24
+
+- just updating
+
 ## [0.2.1] - 2017-10-24
 
 - fix env variable init
@@ -18,7 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - exit code 1 set if anything failed
 - NODE_ENV set from UFP_NODE_ENV on start
 
-## [0.1.6] - 2017-10-23
+                       ## [0.1.6] - 2017-10-23
 
 - version display from package.json for --version cli option
 
