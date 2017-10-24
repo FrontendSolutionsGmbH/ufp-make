@@ -278,7 +278,6 @@ const incCommandExecution = ({command}) => {
         countCommands[currentPhase]++
     } else {
         countCommands[currentPhase] = 1
-
     }
     const key = currentStack.join('.') + '.' + currentPhase
     if (!isNaN(countCommands[key])) {
@@ -289,12 +288,10 @@ const incCommandExecution = ({command}) => {
 }
 
 const incCommandFail = () => {
-
     if (!isNaN(countFailCommands[currentPhase])) {
         countFailCommands[currentPhase]++
     } else {
         countFailCommands[currentPhase] = 1
-
     }
 
     const key = currentStack.join('.') + '.' + currentPhase
@@ -309,8 +306,8 @@ const incCommandSuccess = ({command}) => {
         countSuccessCommands[currentPhase]++
     } else {
         countSuccessCommands[currentPhase] = 1
-
     }
+
     const key = currentStack.join('.') + '.' + currentPhase
     if (!isNaN(countSuccessCommands[key])) {
         countSuccessCommands[key]++
@@ -520,46 +517,61 @@ const processUfpMakeDefinitionInside = ({
  * options object is usually parsed commandline but can be filled as liked (see readme for values)
  *
  */
-module.exports = {
+const UfpMake = {
 
-    makeFile: async({
-
+    makeFile: ({
         fileName = JsUtils.throwParam('Filename required for makeFile(), expecting a parameter object'),
         options = defaultOptions
     } = JsUtils.throwParam('parameters object required for makeFile()')) => {
-        return new Promise((resolve, reject) => {
+        logger.mark('using', fileName)
+        const optionsFinal = merge(defaultOptions, options)
 
-                logger.mark('using', fileName)
-                const optionsFinal = merge(defaultOptions, options)
+        if (optionsFinal) {
+            logger.debug('Options are:', optionsFinal)
+        }
 
-                if (optionsFinal) {
-                    logger.debug('Options are:', optionsFinal)
+        initByConfigFile({
+            fileName,
+            options: optionsFinal
+        })
+    },
+
+    makeFilePromise: ({
+        fileName = JsUtils.throwParam('Filename required for makeFile(), expecting a parameter object'),
+        options = defaultOptions
+    } = JsUtils.throwParam('parameters object required for makeFile()')) => {
+        return new Promise((resolve) => {
+                try {
+                    UfpMake.makeFile({
+                        fileName,
+                        options
+                    })
+
+                    resolve({
+                        sucess: Object.keys(countFailCommands).length === 0,
+                        result: {
+                            countCommands,
+                            countFailCommands,
+                            countSuccessCommands
+                        }
+                    })
+                } catch (e) {
+                    resolve({
+                        sucess: false,
+                        error: e
+                    })
                 }
-
-                initByConfigFile({
-                    fileName,
-                    options: optionsFinal
-                })
-
-                resolve({
-                    sucess: Object.keys(countFailCommands).length === 0,
-                    result: {
-                        countCommands,
-                        countFailCommands,
-                        countSuccessCommands
-                    }
-                })
             }
         )
-
     },
-    make: async({ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required for make(), expecting a parameter object'), options} = {}) => {
-        return new Promise((resolve, reject) => {
-            initByObject({
-                ufpMakeDefinition,
-                options
-            })
+
+    make: ({ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required for make(), expecting a parameter object'), options} = {}) => {
+        initByObject({
+            ufpMakeDefinition,
+            options
         })
     }
 
 }
+
+module.exports = UfpMake

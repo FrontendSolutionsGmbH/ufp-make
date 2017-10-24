@@ -18,7 +18,7 @@ if (fs.existsSync(expectedPath)) {
     config = fallbackPath
 }
 
-UfpMake.makeFile({
+UfpMake.makeFilePromise({
     fileName: config,
     options: {
         ...yargsConfig.argv
@@ -33,4 +33,3 @@ UfpMake.makeFile({
            }
            return data
        })
-
