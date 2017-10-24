@@ -3,6 +3,7 @@ const logger = require('../src/Logger')('ufp-make')
 const fs = require('fs')
 const path = require('path')
 const execSync = require('child_process').execSync
+const yargsConfig = require('./YargsConfig')
 const JsUtils = require('./JsUtils')
 let merge = require('deepmerge')
 
@@ -26,10 +27,10 @@ let currentStack = []
 const defaultOptions = {
     TARGET: 'default',
     FORCE: false,
-    UFP_VERSION: '1.0.0',
-    UFP_API_TYPE: 'mock',
-    UFP_THEME: 'default',
-    UFP_NODE_ENV: 'development'
+    UFP_VERSION: yargsConfig.argv.UFP_VERSION,
+    UFP_API_TYPE: yargsConfig.argv.UFP_API_TYPE,
+    UFP_THEME: yargsConfig.argv.UFP_THEME,
+    UFP_NODE_ENV: yargsConfig.argv.UFP_NODE_ENV
 }
 
 /**
@@ -57,6 +58,7 @@ const loadYAML = (filename) => {
 const initByObject = ({ufpMakeDefinition, options}) => {
     const joinedOptions = Object.assign({}, ufpMakeDefinition.alias || {}, options)
 
+    logger.info('Using joinedOptions file', options)
     logger.info('Using joinedOptions file', joinedOptions)
     init({
         ufpMakeDefinition,
