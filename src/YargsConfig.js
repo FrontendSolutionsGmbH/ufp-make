@@ -32,13 +32,13 @@ if (pre.targets) {
     Object.keys(pre.targets)
         .map((target) => {
             yargs.command(target, `build target ${target} `, {
-                TARGET: {default: target}
+                TARGET: { default: target }
             })
         })
     Object.keys(pre.tasks)
         .map((target) => {
             yargs.command(target, `execute task ${target}`, {
-                TARGET: {default: target}
+                TARGET: { default: target }
             })
         })
 }
