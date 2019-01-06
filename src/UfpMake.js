@@ -55,7 +55,7 @@ const loadYAML = (filename) => {
  * @param ufpMakeDefinition
  * @param options
  */
-const initByObject = ({ufpMakeDefinition, options}) => {
+const initByObject = ({ ufpMakeDefinition, options }) => {
     const joinedOptions = Object.assign({}, ufpMakeDefinition.alias || {}, options)
 
     logger.info('Using joinedOptions file', options)
@@ -76,7 +76,7 @@ const initByObject = ({ufpMakeDefinition, options}) => {
  * @param fileName
  * @param options
  */
-const initByConfigFile = ({fileName, options}) => {
+const initByConfigFile = ({ fileName, options }) => {
     logger.info('Using config file', fileName)
     let ufpMakeDefinition
     if (fs.existsSync(fileName)) {
@@ -98,7 +98,7 @@ const initByConfigFile = ({fileName, options}) => {
  * resets the *basic* counters for statistics
  * @param ufpMakeDefinition
  */
-const init = ({ufpMakeDefinition}) => {
+const init = ({ ufpMakeDefinition }) => {
     logger.info(ufpMakeDefinition)
     // init stats
     Object.keys(ufpMakeDefinition.tasks)
@@ -120,7 +120,7 @@ const init = ({ufpMakeDefinition}) => {
  * @param values
  * @returns {*}
  */
-const replaceVars = ({string, values}) => {
+const replaceVars = ({ string, values }) => {
     let result = string
     // fixme: hacky node env pass through
     values['NODE_ENV'] = values['UFP_NODE_ENV']
@@ -136,7 +136,7 @@ const replaceVars = ({string, values}) => {
  * @param err
  * @param options
  */
-const handleError = ({err, options}) => {
+const handleError = ({ err, options }) => {
     incCommandFail()
     logger.error('Execution failed', err.message)
     logger.debug('Execution failed', err)
@@ -171,7 +171,7 @@ const handleError = ({err, options}) => {
  * @param command - string,array,object
  * @param options
  */
-const executeCommandArea = ({command, options}) => {
+const executeCommandArea = ({ command, options }) => {
     if (typeof command === 'string' || command instanceof String) {
         executeCommand({
             command,
@@ -231,7 +231,7 @@ const executeCommandArea = ({command, options}) => {
  * @param countFailCommands
  * @param executedAreas
  */
-const printStats = ({countCommands, countFailCommands, executedAreas}) => {
+const printStats = ({ countCommands, countFailCommands, executedAreas }) => {
     Object.keys(countCommands)
         .map((key) => {
             if (countFailCommands[key] > 0) {
@@ -275,7 +275,7 @@ const isPhaseValid = (phases) => {
     }
 }
 
-const incCommandExecution = ({command}) => {
+const incCommandExecution = ({ command }) => {
     if (!isNaN(countCommands[currentPhase])) {
         countCommands[currentPhase]++
     } else {
@@ -303,7 +303,7 @@ const incCommandFail = () => {
         countFailCommands[key] = 1
     }
 }
-const incCommandSuccess = ({command}) => {
+const incCommandSuccess = ({ command }) => {
     if (!isNaN(countSuccessCommands[currentPhase])) {
         countSuccessCommands[currentPhase]++
     } else {
@@ -325,8 +325,8 @@ const incCommandSuccess = ({command}) => {
  * @param command
  * @param options
  */
-const executeCommand = ({command, options}) => {
-    incCommandExecution({command})
+const executeCommand = ({ command, options }) => {
+    incCommandExecution({ command })
     const commandNew = replaceVars({
         string: command,
         values: options
@@ -352,7 +352,7 @@ const executeCommand = ({command, options}) => {
         if (output && output.toString) {
             logger.debug(output.toString())
         }
-        incCommandSuccess({command})
+        incCommandSuccess({ command })
     } catch (err) {
         logger.error('FAIL [', commandNew, ']', err.message)
         handleError({
@@ -370,7 +370,7 @@ const executeCommand = ({command, options}) => {
  * @param theTarget list of strings for targets/tasks
  * @param options
  */
-const processTarget = ({name, ufpMakeDefinition, theTarget, options}) => {
+const processTarget = ({ name, ufpMakeDefinition, theTarget, options }) => {
     logger.debug('Target Definition is', theTarget)
     // logger.mark('currentstack is ', currentStack)
     currentStack.find((elem) => {
@@ -566,7 +566,7 @@ const UfpMake = {
         )
     },
 
-    make: ({ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required for make(), expecting a parameter object'), options} = {}) => {
+    make: ({ ufpMakeDefinition = JsUtils.throwParam('ufpMakeDefinition required for make(), expecting a parameter object'), options } = {}) => {
         initByObject({
             ufpMakeDefinition,
             options

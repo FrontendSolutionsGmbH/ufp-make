@@ -31,17 +31,17 @@ describe('UfpMake', () => {
     })
 
     it('.makeFile({wrongValue...}) should throw', () => {
-        expect(() => UfpMake.makeFile({wrongField: 'wrongValue'})).to.throw('required')
+        expect(() => UfpMake.makeFile({ wrongField: 'wrongValue' })).to.throw('required')
     })
 
     it('.makeFile({ fileName...}) should work if file exists', () => {
-        expect(() => UfpMake.makeFile({fileName: 'wrongValue'})).to.throw('YML Config not found')
+        expect(() => UfpMake.makeFile({ fileName: 'wrongValue' })).to.throw('YML Config not found')
     })
 
     it('.makeFile({ fileName: "defaultFilename"}) should work if file exists', () => {
         expect(() => UfpMake.makeFile({
             fileName: 'default/ufp-make.yml',
-            options: {TARGET: 'xxx'}
+            options: { TARGET: 'xxx' }
         })).to.not.throw('YML Config not found')
     })
 })
